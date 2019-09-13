@@ -114,6 +114,8 @@ Example:
 ./crossdev-install-qemu-wrapper armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf arm
 ```
 
+If there is no wrapper for your target just copy an existing C file in `crossdev-qemu-wrapper`, then modify and rename it as needed
+
 ### crossdev-cow-env-init
 
 **Note:** This command requires `unionfs-fuse`
