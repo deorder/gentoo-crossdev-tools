@@ -6,7 +6,7 @@ The `sandbox` and `userpriv` emerge `FEATURES` are being disabled for now and th
 
 In combination with my overlay I was able to cross-compile an entire stage3 for the following targets: `aarch64-rpi3hs-linux-musleabi`, `armv6j-rpi1s-linux-gnueabihf`, `aarch64-rpi3s-linux-gnueabi`, `armv7a-rpi2hs-linux-musleabihf`, `armv6j-rpi1hs-linux-musleabihf`, `armv7a-rpi2s-linux-gnueabih`.
 
-Perl and Python sometimes still install in `/usr/<target>/*/lib64` where it should install in `/usr/<target>/*/lib`. I solved this by creating a symbolic links from `/usr/<target>/*/lib64` to `/usr/<target>/*/lib`.
+Perl and Python sometimes, when not using multilib, still install in `/usr/<target>/*/lib64` where it should install in `/usr/<target>/*/lib`. I solved this by creating symbolic links from `/usr/<target>/*/lib64` to `/usr/<target>/*/lib`.
 
 ## How to use
 Usage:
