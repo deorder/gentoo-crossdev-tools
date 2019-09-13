@@ -1,5 +1,5 @@
-# Gentoo crossdev tools (emerge wrapper)
-Cross-compile work arounds to use on environments created with `crossdev`
+# Gentoo crossdev tools
+Cross-compile workarounds to use on environments created with `crossdev`
 
 ## Still being worked on
 Some packages may still not compile as it was tested on only a handful of packages.
