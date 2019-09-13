@@ -1,0 +1,1 @@
+media-sound/mpd -network recorder libsoxr wavpack mpg123 vorbis faad flac lame id3tag curl

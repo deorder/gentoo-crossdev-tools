@@ -1,0 +1,1 @@
+sys-boot/grub -truetype -themes -fonts device-mapper mount

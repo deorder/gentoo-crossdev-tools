@@ -1,0 +1,2 @@
+sys-apps/less -lesspipe -less-select
+app-text/lesspipe -djvu -dvi2tty -ghostscript -rpm2targz -html2text -elinks -links -lynx -cpio -unzip -rar -w3m

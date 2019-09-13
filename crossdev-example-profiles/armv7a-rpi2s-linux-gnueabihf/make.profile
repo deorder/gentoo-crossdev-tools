@@ -1,0 +1,1 @@
+/usr/portage/profiles/default/linux/arm/17.0/armv7a

@@ -1,0 +1,2 @@
+media-libs/libsdl2 -X haptic
+media-libs/sdl2-mixer -mp3 -midi -smpeg -fluidsynth
