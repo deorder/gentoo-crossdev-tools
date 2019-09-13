@@ -2,10 +2,16 @@
 
 TARGET=$1
 shift
+TARGET_DIR=$1
+shift
+SCRIPT_DIR=$(dirname "$0")
+
+if [[ -z "${TARGET_DIR}" ]]; then
+  TARGET_DIR="/usr/${TARGET}"
+fi
 
 PYTHON_PREFIX_DIR=/usr
 
-TARGET_PREFIX_DIR=/usr
 TARGET_PYTHON_PREFIX_DIR=usr
 TARGET_PKGCONFIG_PREFIX_DIR=usr
 
@@ -31,7 +37,7 @@ PYTHON_CONFIG_REAL=$(readlink -e `which python${PYTHON_VER}-config`)
 
 cat << EOF > ${CROSS_INSTALL_DIR}/bin/python${PYTHON_VER}-config
 #!/bin/sh
-exec "/usr/${TARGET}/usr/bin/python${PYTHON_VER}-config" "\${@}"
+exec "${TARGET_DIR}/usr/bin/python${PYTHON_VER}-config" "\${@}"
 EOF
 
 chmod 750 ${CROSS_INSTALL_DIR}/bin/python${PYTHON_VER}-config
@@ -58,13 +64,13 @@ def get_python_inc(plat_specific=0, prefix=None):
   if prefix:
     return os.path.join(prefix, "include", python_name_abi)
   else:
-    return os.path.join('${TARGET_PREFIX_DIR}', '${TARGET}', '${TARGET_PYTHON_PREFIX_DIR}', 'include', python_name_abi)
+    return os.path.join('${TARGET_DIR}', '${TARGET_PYTHON_PREFIX_DIR}', 'include', python_name_abi)
 
 #def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
 #    if prefix:
 #      libpython = os.path.join(prefix, '${LIB_DIR}', python_name)
 #    else:
-#      libpython = os.path.join('${TARGET_PREFIX_DIR}', '${TARGET}', '${TARGET_PYTHON_PREFIX_DIR}', '${LIB_DIR}', python_name)
+#      libpython = os.path.join('${TARGET_DIR}', '${TARGET_PYTHON_PREFIX_DIR}', '${LIB_DIR}', python_name)
 #    if standard_lib:
 #      return libpython
 #    else:
@@ -74,7 +80,7 @@ distutils.sysconfig.get_python_inc = get_python_inc
 #distutils.sysconfig.get_python_lib = get_python_lib
 
 sys.path, sys_path = sys.path[:1], sys.path[1:]
-site.addsitedir(os.path.join('${TARGET_PREFIX_DIR}', '${TARGET}', '${TARGET_PYTHON_PREFIX_DIR}', '${LIB_DIR}', python_name, 'site-packages'))
+site.addsitedir(os.path.join('${TARGET_DIR}', '${TARGET_PYTHON_PREFIX_DIR}', '${LIB_DIR}', python_name, 'site-packages'))
 sys.path.extend(sys_path)
 
 sys.path, sys_path = sys.path[:1], sys.path[1:]
@@ -96,18 +102,18 @@ EOF
 mkdir -p ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}
 #mkdir -p ${PYTHON_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}
 
-ln -fs ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PKGCONFIG_PREFIX_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc ${CROSS_INSTALL_DIR}/${LIB_DIR}/pkgconfig/python.pc
-ln -fs ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PKGCONFIG_PREFIX_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc ${CROSS_INSTALL_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_MAJ}.pc
-ln -fs ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PKGCONFIG_PREFIX_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc ${CROSS_INSTALL_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc
+ln -fs ${TARGET_DIR}/${TARGET_PKGCONFIG_PREFIX_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc ${CROSS_INSTALL_DIR}/${LIB_DIR}/pkgconfig/python.pc
+ln -fs ${TARGET_DIR}/${TARGET_PKGCONFIG_PREFIX_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc ${CROSS_INSTALL_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_MAJ}.pc
+ln -fs ${TARGET_DIR}/${TARGET_PKGCONFIG_PREFIX_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc ${CROSS_INSTALL_DIR}/${LIB_DIR}/pkgconfig/python-${PYTHON_VER}.pc
 
 #rm -f ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/distutils
-#ln -fs ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/distutils ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/distutils
-ln -fs ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/sysconfig.py ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/sysconfig.py
+#ln -fs ${TARGET_DIR}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/distutils ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/distutils
+ln -fs ${TARGET_DIR}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/sysconfig.py ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/sysconfig.py
 
-if [[ -d "${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/" ]]; then
-  if [[ ! -z "$(find ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/ -name "_sysconfigdata*.py" | head -n 1)" ]]; then
-    #ln -fs $(find ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/ -name "_sysconfigdata*.py" | head -n 1) ${PYTHON_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/_sysconfigdata.py
-    ln -fs $(find ${TARGET_PREFIX_DIR}/${TARGET}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/ -name "_sysconfigdata*.py" | head -n 1) ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/_sysconfigdata.py
+if [[ -d "${TARGET_DIR}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/" ]]; then
+  if [[ ! -z "$(find ${TARGET_DIR}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/ -name "_sysconfigdata*.py" | head -n 1)" ]]; then
+    #ln -fs $(find ${TARGET_DIR}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/ -name "_sysconfigdata*.py" | head -n 1) ${PYTHON_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/_sysconfigdata.py
+    ln -fs $(find ${TARGET_DIR}/${TARGET_PYTHON_PREFIX_DIR}/${LIB_DIR}/python${PYTHON_VER}/ -name "_sysconfigdata*.py" | head -n 1) ${CROSS_INSTALL_DIR}/${LIB_DIR}/python${PYTHON_VER}/_sysconfigdata.py
   fi
 fi
 
@@ -122,4 +128,16 @@ export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
 #python2 -c 'import inspect; import sysconfig; import _sysconfigdata; import distutils.sysconfig; print(distutils.sysconfig.get_python_inc()); print(inspect.getfile(_sysconfigdata)); print(inspect.getfile(sysconfig));'
 #python3 -c 'import inspect; import sysconfig; import _sysconfigdata; import distutils.sysconfig; print(distutils.sysconfig.get_python_inc()); print(inspect.getfile(_sysconfigdata)); print(inspect.getfile(sysconfig));'
 
-FEATURES="-sandbox -usersandbox -userpriv" ROOT="/usr/${TARGET}/" PORTAGE_CONFIGROOT="/usr/${TARGET}/" ${TARGET}-emerge --config-root="/usr/${TARGET}/" $@
+if [[ -f "${SCRIPT_DIR}/crossdev-emerge-pre" ]]; then
+  source "${SCRIPT_DIR}/crossdev-emerge-pre"
+fi
+
+if [ ! -z "${COWHOME}" ]; then
+  FEATURES="-sandbox -usersandbox -userpriv" ROOT="${TARGET_DIR}/" PORTAGE_CONFIGROOT="${TARGET_DIR}/" ${TARGET}-emerge --config-root="${TARGET_DIR}/" $@
+else
+  ROOT="${TARGET_DIR}/" PORTAGE_CONFIGROOT="${TARGET_DIR}/" ${TARGET}-emerge --config-root="${TARGET_DIR}/" $@
+fi
+
+if [[ -f "${SCRIPT_DIR}/crossdev-emerge-post" ]]; then
+  source "${SCRIPT_DIR}/crossdev-emerge-post"
+fi

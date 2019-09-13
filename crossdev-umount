@@ -1,0 +1,25 @@
+#!/bin/bash
+
+TARGET=$1
+shift
+TARGET_DIR=$1
+shift
+SCRIPT_DIR=$(dirname "$0")
+
+if [[ -z "${TARGET_DIR}" ]]; then
+  TARGET_DIR="/usr/${TARGET}"
+fi
+
+is_mount() {
+  path=$(readlink -f $1)
+  grep -q "$path" /proc/mounts
+}
+
+if [ -d "${TARGET_DIR}" ]; then
+
+  is_mount ${TARGET_DIR}/sys && umount -R ${TARGET_DIR}/sys
+  is_mount ${TARGET_DIR}/dev && umount -R ${TARGET_DIR}/dev
+  is_mount ${TARGET_DIR}/proc && umount -R ${TARGET_DIR}/proc
+  is_mount ${TARGET_DIR}/dev/pts && umount -R ${TARGET_DIR}/dev/pts
+
+fi

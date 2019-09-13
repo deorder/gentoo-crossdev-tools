@@ -1,0 +1,34 @@
+#!/bin/bash
+
+TARGET=$1
+shift
+TARGET_DIR=$1
+shift
+SCRIPT_DIR=$(dirname "$0")
+
+if [[ -z "${TARGET_DIR}" ]]; then
+  TARGET_DIR="/usr/${TARGET}"
+fi
+
+is_mount() {
+  path=$(readlink -f $1)
+  grep -q "$path" /proc/mounts
+}
+
+COW_PREFIX_DIR=/tmp/cow-${TARGET}
+UNION_PREFIX_DIR=/tmp/union-${TARGET}
+
+if [[ -d ${UNION_PREFIX_DIR} ]]; then
+  if is_mount ${UNION_PREFIX_DIR}; then
+    if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-uninit-pre" ]]; then
+      source "${SCRIPT_DIR}/crossdev-cow-env-uninit-pre"
+    fi
+
+    fuser -Mk ${UNION_PREFIX_DIR}; umount ${UNION_PREFIX_DIR}
+
+    if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-uninit-post" ]]; then
+      source "${SCRIPT_DIR}/crossdev-cow-env-uninit-post"
+    fi
+  fi
+fi
+

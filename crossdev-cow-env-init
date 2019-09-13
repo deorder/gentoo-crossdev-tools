@@ -1,0 +1,27 @@
+#!/bin/bash
+
+TARGET=$1
+shift
+TARGET_DIR=$1
+shift
+SCRIPT_DIR=$(dirname "$0")
+
+if [[ -z "${TARGET_DIR}" ]]; then
+  TARGET_DIR="/usr/${TARGET}"
+fi
+
+COW_PREFIX_DIR=/tmp/cow-${TARGET}
+UNION_PREFIX_DIR=/tmp/union-${TARGET}
+
+mkdir -p ${COW_PREFIX_DIR}
+mkdir -p ${UNION_PREFIX_DIR}
+
+if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-init-pre" ]]; then
+  source "${SCRIPT_DIR}/crossdev-cow-env-init-pre"
+fi
+
+unionfs -o cow ${COW_PREFIX_DIR}=RW:/=RO ${UNION_PREFIX_DIR}
+
+if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-init-post" ]]; then
+  source "${SCRIPT_DIR}/crossdev-cow-env-init-post"
+fi
