@@ -32,26 +32,26 @@ Example:
 ./crossdev-emerge-upgrade-system armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
 ```
 
-### crossdev-emerge-rebuild-glibc
+### crossdev-emerge-bootstrap-glibc
 
 Usage:
 ```
-./crossdev-emerge-rebuild-glibc <target> <target dir> <extra emerge arguments...>
+./crossdev-emerge-bootstrap-glibc <target> <target dir> <extra emerge arguments...>
 ```
 Example:
 ```
-./crossdev-emerge-rebuild-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi --ask --tree
+./crossdev-emerge-bootstrap-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi --ask --tree
 ```
 
-### crossdev-emerge-rebuild-musl
+### crossdev-emerge-bootstrap-musl
 
 Usage:
 ```
-./crossdev-emerge-rebuild-musl <target> <target dir> <extra emerge arguments...>
+./crossdev-emerge-bootstrap-musl <target> <target dir> <extra emerge arguments...>
 ```
 Example:
 ```
-./crossdev-emerge-rebuild-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
+./crossdev-emerge-bootstrap-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
 ```
 
 ### crossdev-clean
