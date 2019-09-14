@@ -22,8 +22,14 @@ Example of how to chroot into the `armv7a-rpi2s-linux-gnueabihf` environment:
 ```
 ./crossdev-install-qemu-wrapper armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 ./crossdev-mount armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
+```
+
+When done:
+```
 ./crossdev-umount armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+umount /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 ```
 
 ### crossdev-emerge
