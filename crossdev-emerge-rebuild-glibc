@@ -10,4 +10,4 @@ if [[ -z "${TARGET_DIR}" ]]; then
   TARGET_DIR="/usr/${TARGET}"
 fi
 
-${SCRIPT_DIR}/crossdev-emerge ${TARGET} ${TARGET_DIR} --ask --tree --usepkg-exclude="*" $@ sys-devel/gcc sys-devel/binutils sys-libs/musl
+${SCRIPT_DIR}/crossdev-emerge ${TARGET} ${TARGET_DIR} --ask --tree --usepkg-exclude="*" $@ sys-devel/gcc sys-devel/binutils
