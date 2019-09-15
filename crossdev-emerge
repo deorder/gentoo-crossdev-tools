@@ -45,7 +45,7 @@ ln -fs ./python${PYTHON_VER}-config ${CROSS_INSTALL_DIR}/bin/python-config
 ln -fs ./python${PYTHON_VER}-config ${CROSS_INSTALL_DIR}/bin/python${PYTHON_MAJ}-config
 cp -a ${PYTHON_CONFIG_REAL} ${CROSS_INSTALL_DIR}/bin/real/python${PYTHON_VER}-config
 
-for TOOL in cc gcc g++ c++; do
+for TOOL in cc gcc cpp g++ c++; do
 
 cat << EOF > ${CROSS_INSTALL_DIR}/bin/${TARGET}-${TOOL}
 #!/bin/bash
@@ -171,6 +171,7 @@ export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
 
 export CC="${CROSS_PREFIX_DIR}/bin/${TARGET}-gcc"
 export CXX="${CROSS_PREFIX_DIR}/bin/${TARGET}-g++"
+export CPP="${CROSS_PREFIX_DIR}/bin/${TARGET}-cpp"
 
 #python2 -c 'import inspect; import sysconfig; import _sysconfigdata; import distutils.sysconfig; print(distutils.sysconfig.get_python_inc()); print(inspect.getfile(_sysconfigdata)); print(inspect.getfile(sysconfig));'
 #python3 -c 'import inspect; import sysconfig; import _sysconfigdata; import distutils.sysconfig; print(distutils.sysconfig.get_python_inc()); print(inspect.getfile(_sysconfigdata)); print(inspect.getfile(sysconfig));'
