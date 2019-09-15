@@ -15,8 +15,8 @@ PYTHON_PREFIX_DIR=/usr
 TARGET_PYTHON_PREFIX_DIR=usr
 TARGET_PKGCONFIG_PREFIX_DIR=usr
 
-CROSS_PREFIX_DIR=/tmp/python-${TARGET}
-CROSS_INSTALL_DIR=/tmp/python-${TARGET}
+CROSS_PREFIX_DIR=/tmp/wrapper-${TARGET}
+CROSS_INSTALL_DIR=/tmp/wrapper-${TARGET}
 
 mkdir -p ${CROSS_INSTALL_DIR}
 mkdir -p ${CROSS_INSTALL_DIR}/bin
@@ -45,6 +45,37 @@ ln -fs ./python${PYTHON_VER}-config ${CROSS_INSTALL_DIR}/bin/python-config
 ln -fs ./python${PYTHON_VER}-config ${CROSS_INSTALL_DIR}/bin/python${PYTHON_MAJ}-config
 cp -a ${PYTHON_CONFIG_REAL} ${CROSS_INSTALL_DIR}/bin/real/python${PYTHON_VER}-config
 
+for TOOL in cc gcc g++ c++; do
+
+cat << EOF > ${CROSS_INSTALL_DIR}/bin/${TARGET}-${TOOL}
+#!/bin/bash
+ARGS=("\$@")
+for ((INDEX=0; INDEX<"\${#ARGS[@]}"; ++INDEX)); do
+  FILTER=\${ARGS[INDEX]}
+  FILTER_SRC='-I/usr/include'
+  FILTER_DST='-I${TARGET_DIR}/usr/include'
+  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+  FILTER_SRC='-L/lib'
+  FILTER_DST='-L${TARGET_DIR}/lib'
+  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+  FILTER_SRC='-L/lib64'
+  FILTER_DST='-L${TARGET_DIR}/lib64'
+  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+  FILTER_SRC='-L/usr/lib'
+  FILTER_DST='-L${TARGET_DIR}/usr/lib'
+  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+  FILTER_SRC='-L/usr/lib64'
+  FILTER_DST='-L${TARGET_DIR}/usr/lib64'
+  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+  ARGS[INDEX]=\${FILTER}
+done
+exec "/usr/bin/${TARGET}-${TOOL}" "\${ARGS[@]}"
+EOF
+
+chmod 755 ${CROSS_INSTALL_DIR}/bin/${TARGET}-${TOOL}
+
+done
+
 for LIB_DIR in lib lib64; do
 
 cat << EOF > ${CROSS_INSTALL_DIR}/${LIB_DIR}/sitecustomize.py
@@ -60,11 +91,32 @@ if hasattr(sys, 'abiflags'):
 python_name = 'python' + distutils.sysconfig.get_python_version()
 python_name_abi = 'python' + distutils.sysconfig.get_python_version() + abiflags
 
-def get_python_inc(plat_specific=0, prefix=None):
-  if prefix:
-    return os.path.join(prefix, "include", python_name_abi)
-  else:
-    return os.path.join('${TARGET_DIR}', '${TARGET_PYTHON_PREFIX_DIR}', 'include', python_name_abi)
+sys.path, sys_path = sys.path[:1], sys.path[1:]
+site.addsitedir(os.path.join('${TARGET_DIR}', '${TARGET_PYTHON_PREFIX_DIR}', '${LIB_DIR}', python_name, 'site-packages'))
+sys.path.extend(sys_path)
+
+sys.path, sys_path = sys.path[:1], sys.path[1:]
+site.addsitedir(os.path.join('${CROSS_PREFIX_DIR}', '${LIB_DIR}', python_name))
+sys.path.extend(sys_path)
+
+if '_sysconfigdata' in sys.modules:
+  del sys.modules['_sysconfigdata']
+import _sysconfigdata
+
+#for key in ['LIBP', 'LIBPL', 'LIBDIR', 'INCLUDEPY', 'INCLUDEDIR', 'CONFINCLUDEPY', 'CONFINCLUDEDIR']:
+#    if key in _sysconfigdata.build_time_vars and not '${TARGET_DIR}' in _sysconfigdata.build_time_vars[key]:
+#        _sysconfigdata.build_time_vars[key] = '${TARGET_DIR}' + _sysconfigdata.build_time_vars[key]
+
+#for key in _sysconfigdata.build_time_vars:
+#  print(key, _sysconfigdata.build_time_vars[key])
+
+if 'distutils.sysconfig' in sys.modules:
+  del sys.modules['distutils.sysconfig']
+import distutils.sysconfig
+
+if 'sysconfig' in sys.modules:
+  del sys.modules['sysconfig']
+import sysconfig
 
 #def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
 #    if prefix:
@@ -76,22 +128,14 @@ def get_python_inc(plat_specific=0, prefix=None):
 #    else:
 #      return os.path.join(libpython, 'site-packages')
 
-distutils.sysconfig.get_python_inc = get_python_inc
+def get_python_inc(plat_specific=0, prefix=None):
+  if prefix:
+    return os.path.join(prefix, "include", python_name_abi)
+  else:
+    return os.path.join('${TARGET_DIR}', '${TARGET_PYTHON_PREFIX_DIR}', 'include', python_name_abi)
+
 #distutils.sysconfig.get_python_lib = get_python_lib
-
-sys.path, sys_path = sys.path[:1], sys.path[1:]
-site.addsitedir(os.path.join('${TARGET_DIR}', '${TARGET_PYTHON_PREFIX_DIR}', '${LIB_DIR}', python_name, 'site-packages'))
-sys.path.extend(sys_path)
-
-sys.path, sys_path = sys.path[:1], sys.path[1:]
-site.addsitedir(os.path.join('${CROSS_PREFIX_DIR}', '${LIB_DIR}', python_name))
-sys.path.extend(sys_path)
-
-if '_sysconfigdata' in sys.modules:
-  del sys.modules['_sysconfigdata']
-
-if 'sysconfig' in sys.modules:
-  del sys.modules['sysconfig']
+distutils.sysconfig.get_python_inc = get_python_inc
 
 sys.base_exec_prefix = '${PYTHON_PREFIX_DIR}'
 sys.base_prefix = '${PYTHON_PREFIX_DIR}'
@@ -121,9 +165,12 @@ done
 
 done
 
-export PYTHONPATH="/tmp/python-${TARGET}/lib"
-export PATH="/tmp/python-${TARGET}/bin:${PATH}"
+export PYTHONPATH="${CROSS_PREFIX_DIR}/lib"
+export PATH="${CROSS_PREFIX_DIR}/bin:${PATH}"
 export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
+
+export CC="${CROSS_PREFIX_DIR}/bin/${TARGET}-gcc"
+export CXX="${CROSS_PREFIX_DIR}/bin/${TARGET}-g++"
 
 #python2 -c 'import inspect; import sysconfig; import _sysconfigdata; import distutils.sysconfig; print(distutils.sysconfig.get_python_inc()); print(inspect.getfile(_sysconfigdata)); print(inspect.getfile(sysconfig));'
 #python3 -c 'import inspect; import sysconfig; import _sysconfigdata; import distutils.sysconfig; print(distutils.sysconfig.get_python_inc()); print(inspect.getfile(_sysconfigdata)); print(inspect.getfile(sysconfig));'

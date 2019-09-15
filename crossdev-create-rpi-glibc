@@ -4,25 +4,10 @@ TARGET=$1
 shift
 TARGET_DIR=$1
 shift
-CONFIRM=$1
-shift
 SCRIPT_DIR=$(dirname "$0")
 
 if [[ -z "${TARGET_DIR}" ]]; then
   TARGET_DIR="${TARGET_DIR}"
 fi
 
-if [[ "${CONFIRM}" == "ICONFIRM" ]]; then
-  echo "Confirmed create"
-
-  CFLAGS="-O2 -pipe" CXXFLAGS="-O2 -pipe" PORTDIR_OVERLAY="" crossdev --target ${TARGET} --kernel 4.19 --binutils 2.32-r1 --gcc 8.3.0-r1 --libc 2.29-r4
-
-  mv ${TARGET_DIR}/etc/portage ${TARGET_DIR}/etc/portage.org
-  ln -fs ./lib ${TARGET_DIR}/usr/lib64
-  ln -fs ./lib ${TARGET_DIR}/lib64
-  mkdir -p ${TARGET_DIR}/usr/src/linux
-  mkdir -p ${TARGET_DIR}/etc/portage
-  mkdir -p ${TARGET_DIR}/packages
-else
-  echo "Confirm with ICONFIRM as the 3th argument"
-fi
+${SCRIPT_DIR}/crossdev-create --kernel 4.19 --binutils 2.32-r1 --gcc 8.3.0-r1 --libc 2.29-r4 $@
