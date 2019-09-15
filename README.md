@@ -10,7 +10,7 @@ Perl and Python sometimes, when not using multilib, still install in `/usr/<targ
 
 ## How to use
 
-Example of how to build a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
+Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
 ```
 ./crossdev-create-rpi-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
@@ -18,7 +18,7 @@ cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi
 ./crossdev-emerge-install-system armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 ```
 
-Example of how to chroot into the `armv7a-rpi2s-linux-gnueabihf` environment:
+Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
 ```
 ./crossdev-install-qemu-wrapper armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 ./crossdev-mount armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
