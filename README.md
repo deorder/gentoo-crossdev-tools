@@ -12,7 +12,7 @@ Perl and Python sometimes, when not using multilib, still install in `/usr/<targ
 
 Example of how to build a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
 ```
-./crossdev-create-rpi-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf ICONFIRM
+./crossdev-create-rpi-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
 ./crossdev-emerge-bootstrap-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 ./crossdev-emerge-install-system armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
@@ -95,7 +95,7 @@ Usage:
 ```
 Example:
 ```
-./crossdev-create-rpi-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi ICONFIRM
+./crossdev-create-rpi-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi
 ```
 
 ### crossdev-create-rpi-musl
@@ -106,7 +106,7 @@ Usage:
 ```
 Example:
 ```
-./crossdev-create-rpi-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf ICONFIRM
+./crossdev-create-rpi-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf
 ```
 
 ### crossdev-install-rpi3-firmware
