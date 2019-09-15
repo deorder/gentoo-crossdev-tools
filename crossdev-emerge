@@ -99,9 +99,9 @@ sys.path, sys_path = sys.path[:1], sys.path[1:]
 site.addsitedir(os.path.join('${CROSS_PREFIX_DIR}', '${LIB_DIR}', python_name))
 sys.path.extend(sys_path)
 
-if '_sysconfigdata' in sys.modules:
-  del sys.modules['_sysconfigdata']
-import _sysconfigdata
+#if '_sysconfigdata' in sys.modules:
+#  del sys.modules['_sysconfigdata']
+#import _sysconfigdata
 
 #for key in ['LIBP', 'LIBPL', 'LIBDIR', 'INCLUDEPY', 'INCLUDEDIR', 'CONFINCLUDEPY', 'CONFINCLUDEDIR']:
 #    if key in _sysconfigdata.build_time_vars and not '${TARGET_DIR}' in _sysconfigdata.build_time_vars[key]:
@@ -166,6 +166,7 @@ done
 done
 
 export PYTHONPATH="${CROSS_PREFIX_DIR}/lib"
+export PREROOTPATH="${CROSS_PREFIX_DIR}/bin"
 export PATH="${CROSS_PREFIX_DIR}/bin:${PATH}"
 export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
 
