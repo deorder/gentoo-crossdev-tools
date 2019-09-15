@@ -11,9 +11,9 @@ if [[ -z "${TARGET_DIR}" ]]; then
 fi
 
 # Source: https://wiki.gentoo.org/wiki/Distcc/Cross-Compiling
-LIBC_VER=$(qatom -F '%{PV}' $(qlist -Ive sys-libs/glibc))
-KERNEL_VER=$(qatom -F '%{PV}' $(qlist -Ive sys-kernel/linux-headers))
-GCC_VER=$(qatom -F '%{PV}' $(qfile -v $(realpath /usr/bin/gcc) | cut -d' ' -f1))
-BINUTILS_VER=$(qatom -F '%{PV}' $(qfile -v $(realpath /usr/bin/ld) | cut -d' ' -f1))
+LIBC_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-libs/glibc))
+KERNEL_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-kernel/linux-headers))
+GCC_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/gcc) | cut -d' ' -f1))
+BINUTILS_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/ld) | cut -d' ' -f1))
 
-${SCRIPT_DIR}/crossdev-create --kernel ${KERNEL_VER} --binutils ${BINUTILS_VER} --gcc ${GCC_VER} --libc ${LIBC_VER} $@
+${SCRIPT_DIR}/crossdev-create ${TARGET} ${TARGET_DIR} --kernel ${KERNEL_VER} --binutils ${BINUTILS_VER} --gcc ${GCC_VER} --libc ${LIBC_VER} $@
