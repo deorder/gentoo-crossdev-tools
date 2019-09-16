@@ -47,6 +47,8 @@ cp -a ${PYTHON_CONFIG_REAL} ${CROSS_INSTALL_DIR}/bin/real/python${PYTHON_VER}-co
 
 for TOOL in cc gcc cpp g++ c++; do
 
+if [[ -f "/usr/bin/${TARGET}-${TOOL}" ]]; then
+
 cat << EOF > ${CROSS_INSTALL_DIR}/bin/${TARGET}-${TOOL}
 #!/bin/bash
 ARGS=("\$@")
@@ -73,6 +75,8 @@ exec "/usr/bin/${TARGET}-${TOOL}" "\${ARGS[@]}"
 EOF
 
 chmod 755 ${CROSS_INSTALL_DIR}/bin/${TARGET}-${TOOL}
+
+fi
 
 done
 
