@@ -11,7 +11,39 @@ if [[ -z "${TARGET_DIR}" ]]; then
 fi
 
 # Source: https://wiki.gentoo.org/wiki/Distcc/Cross-Compiling
+LIBC_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-libs/glibc))
+KERNEL_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-kernel/linux-headers))
 GCC_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/gcc) | cut -d' ' -f1))
 BINUTILS_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/ld) | cut -d' ' -f1))
 
+if [[ -f "${SCRIPT_DIR}/crossdev-bootstrap-pre" ]]; then
+  source "${SCRIPT_DIR}/crossdev-bootstrap-pre"
+fi
+
+mkdir -p ${TARGER_DIR}/etc/portage/package.mask/
+
+cat << EOF > ${TARGET_DIR}/etc/portage/package.mask/gcc
+>sys-devel/gcc-${GCC_VER}
+<sys-devel/gcc-${GCC_VER}
+EOF
+
+cat << EOF > ${TARGET_DIR}/etc/portage/package.mask/glibc
+>sys-libc/glibc-${LIBC_VER}
+<sys-libs/glibc-${LIBC_VER}
+EOF
+
+cat << EOF > ${TARGET_DIR}/etc/portage/package.mask/binutils
+>sys-devel/binutils-${BINUTILS_VER}
+<sys-devel/binutils-${BINUTILS_VER}
+EOF
+
+cat << EOF > ${TARGET_DIR}/etc/portage/package.mask/linux-headers
+>sys-kernel/linux-headers-${KERNEL_VER}
+<sys-kernel/linux-headers-${KERNEL_VER}
+EOF
+
 ${SCRIPT_DIR}/crossdev-emerge ${TARGET} ${TARGET_DIR} --ask --tree --usepkg-exclude="*" $@ =sys-devel/gcc-${GCC_VER} =sys-devel/binutils-${BINUTILS_VER}
+
+if [[ -f "${SCRIPT_DIR}/crossdev-bootstrap-post" ]]; then
+  source "${SCRIPT_DIR}/crossdev-bootstrap-post"
+fi
