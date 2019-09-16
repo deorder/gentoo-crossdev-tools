@@ -1,0 +1,17 @@
+#!/bin/bash
+
+TARGET=$1
+shift
+TARGET_DIR=$1
+shift
+SCRIPT_DIR=$(dirname "$0")
+
+if [[ -z "${TARGET_DIR}" ]]; then
+  TARGET_DIR="/usr/${TARGET}"
+fi
+
+# Source: https://wiki.gentoo.org/wiki/Distcc/Cross-Compiling
+GCC_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/gcc) | cut -d' ' -f1))
+BINUTILS_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/ld) | cut -d' ' -f1))
+
+${SCRIPT_DIR}/crossdev-emerge ${TARGET} ${TARGET_DIR} --ask --tree --usepkg-exclude="*" $@ =sys-devel/gcc-${GCC_VER} =sys-devel/binutils-${BINUTILS_VER} sys-libs/musl

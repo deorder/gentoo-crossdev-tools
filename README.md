@@ -12,9 +12,9 @@ Perl and Python sometimes, when not using multilib, still install in `/usr/<targ
 
 Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
 ```
-./crossdev-create-rpi-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+./crossdev-create-hostlike-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
-./crossdev-emerge-bootstrap-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+./crossdev-bootstrap-hostlike-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 ./crossdev-emerge-install-system armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
 ```
 
@@ -54,26 +54,26 @@ Example:
 ./crossdev-emerge-upgrade-system armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
 ```
 
-### crossdev-emerge-bootstrap-glibc
+### crossdev-bootstrap-hostlike-glibc
 
 Usage:
 ```
-./crossdev-emerge-bootstrap-glibc <target> <target dir> <extra emerge arguments...>
+./crossdev-bootstrap-hostlike-glibc <target> <target dir> <extra emerge arguments...>
 ```
 Example:
 ```
-./crossdev-emerge-bootstrap-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi --ask --tree
+./crossdev-bootstrap-hostlike-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi --ask --tree
 ```
 
-### crossdev-emerge-bootstrap-musl
+### crossdev-bootstrap-hostlike-musl
 
 Usage:
 ```
-./crossdev-emerge-bootstrap-musl <target> <target dir> <extra emerge arguments...>
+./crossdev-bootstrap-hostlike-musl <target> <target dir> <extra emerge arguments...>
 ```
 Example:
 ```
-./crossdev-emerge-bootstrap-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
+./crossdev-bootstrap-hostlike-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
 ```
 
 ### crossdev-clean
@@ -87,26 +87,26 @@ Example:
 ./crossdev-clean armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf ICONFIRM
 ```
 
-### crossdev-create-rpi-glibc
+### crossdev-create-hostlike-glibc
 
 Usage:
 ```
-./crossdev-create-rpi-glibc <target> <target dir> <confirm>
+./crossdev-create-hostlike-glibc <target> <target dir> <confirm>
 ```
 Example:
 ```
-./crossdev-create-rpi-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi
+./crossdev-create-hostlike-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi
 ```
 
-### crossdev-create-rpi-musl
+### crossdev-create-hostlike-musl
 
 Usage:
 ```
-./crossdev-create-rpi-musl <target> <target dir> <confirm>
+./crossdev-create-hostlike-musl <target> <target dir> <confirm>
 ```
 Example:
 ```
-./crossdev-create-rpi-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf
+./crossdev-create-hostlike-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf
 ```
 
 ### crossdev-install-rpi3-firmware
