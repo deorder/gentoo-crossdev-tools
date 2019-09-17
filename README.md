@@ -11,7 +11,7 @@ Perl and Python sometimes, when not using multilib, still install in `/usr/<targ
 ## How to use
 
 Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
-```
+```bash
 ./crossdev-create --cd-target armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
 ./crossdev-bootstrap --cd-use-rpi --cd-target armv7a-rpi2s-linux-gnueabihf
@@ -19,7 +19,7 @@ cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi
 ```
 
 Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
-```
+```bash
 ./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi2
 ./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
 mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
@@ -30,6 +30,35 @@ When done:
 ```
 ./crossdev-umount --cd-target armv7a-rpi2s-linux-gnueabihf
 umount /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
+```
+
+To let it automatically mount/unmount `/usr/portage`, create the following files:
+
+The file `/etc/crossdev/crossdev-mount-post` containing:
+```
+#!/bin/bash
+
+source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+
+if [ -d "${CD_TARGET_DIR}" ]; then
+  ebegin "Mounting ${CD_TARGET_DIR}/usr/portage"
+  mkdir -p "${CD_TARGET_DIR}/usr/portage" || cd_die
+  cd_is_mount "${CD_TARGET_DIR}/usr/portage" || mount -o bind /usr/portage "${CD_TARGET_DIR}/usr/portage" || cd_die
+  eend 0
+fi
+```
+
+The file `/etc/crossdev/crossdev-umount-pre` containing:
+```
+#!/bin/bash
+
+source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+
+if [ -d "${CD_TARGET_DIR}" ]; then
+  ebegin "Unmounting ${CD_TARGET_DIR}/usr/portage"
+  cd_is_mount "${CD_TARGET_DIR}/usr/portage" && (umount "${CD_TARGET_DIR}/usr/portage" || cd_die)
+  eend 0
+fi
 ```
 
 ### crossdev-emerge
@@ -160,7 +189,7 @@ Example:
 ./crossdev-cow-env-init --cd-target armv7a-rpi2hs-linux-musleabihf
 ```
 Before using this command you may want to create a `crossdev-cow-env-init-post` file containing:
-```
+```bash
 #!/bin/bash
 ${CD_SCRIPT_DIR}/crossdev-mount --cd-target "${CD_TARGET}" --cd-target-dir "${CD_UNION_PREFIX_DIR}"
 ```
@@ -201,7 +230,7 @@ Example:
 ./crossdev-cow-env-uninit --cd-target armv7a-rpi2hs-linux-musleabihf
 ```
 Before using this command you may want to create a `crossdev-cow-env-uninit-pre` file containing:
-```
+```bash
 #!/bin/bash
 ${CD_SCRIPT_DIR}/crossdev-umount --cd-target ${CD_TARGET} --cd-target-dir "${CD_UNION_PREFIX_DIR}"
 ```
