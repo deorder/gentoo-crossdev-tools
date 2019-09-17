@@ -22,6 +22,30 @@ cd_parse_extra_arguments() {
       *-cd-use-glibc)
       CD_USE_LIBC="glibc"
       ;;
+      *-cd-gcc-ver)
+      shift; CD_GCC_VER="${1}"
+      ;;
+      *-cd-gcc-ver=*)
+      CD_GCC_VER="${1#*=}"
+      ;;
+      *-cd-libc-ver)
+      shift; CD_LIBC_VER="${1}"
+      ;;
+      *-cd-libc-ver=*)
+      CD_LIBC_VER="${1#*=}"
+      ;;
+      *-cd-kernel-ver)
+      shift; CD_KERNEL_VER="${1}"
+      ;;
+      *-cd-kernel-ver=*)
+      CD_KERNEL_VER="${1#*=}"
+      ;;
+      *-cd-binutils-ver)
+      shift; CD_BINUTILS_VER="${1}"
+      ;;
+      *-cd-binutils-ver=*)
+      CD_BINUTILS_VER="${1#*=}"
+      ;;
       --)
       shift;
       while (( ${#@} )); do
@@ -46,6 +70,10 @@ if [[ ! -z "${CD_HELP}" ]]; then
   echo "--cd-use-rpi (Use RPi supported kernel)"
   echo "--cd-use-musl (Use musl as the libc)"
   echo "--cd-use-glibc (Use glibc as the libc)"
+  echo "--cd-gcc-ver (Override GCC version to use)"
+  echo "--cd-libc-ver (Override libc version to use)"
+  echo "--cd-kernel-ver (Override kernel version to use)"
+  echo "--cd-binutils-ver (Override binutils version to use)"
   exit 1
 fi
 
@@ -53,48 +81,84 @@ CD_CROSSDEV_EMERGE_ARGS+=("sys-apps/baselayout")
 
 CD_CROSSDEV_EMERGE_ARGS+=("virtual/libc")
 if [[ "${CD_USE_LIBC}" == "musl" ]]; then
-  einfo "Using musl";
-  CD_CROSSDEV_EMERGE_ARGS+=("sys-libs/musl")
+  if [[ ! -z "${CD_LIBC_VER}" ]]; then
+    einfo "Using musl version: ${CD_LIBC_VER}";
+    CD_CROSSDEV_EMERGE_ARGS+=("sys-libs/musl-${CD_LIBC_VER}")
+  else
+    CD_LIBC_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-libs/musl 2> /dev/null) 2> /dev/null)
+    if [[ ! -z "${CD_LIBC_VER}" ]]; then
+      einfo "No musl version specified, using: ${CD_LIBC_VER}";
+      CD_CROSSDEV_EMERGE_ARGS+=("sys-libs/musl-${CD_LIBC_VER}")
+    else
+      einfo "No musl version specified, using latest";
+      CD_CROSSDEV_EMERGE_ARGS+=("sys-libs/musl")
+    fi
+  fi
 fi
 if [[ "${CD_USE_LIBC}" == "glibc" ]]; then
   if [[ ! -z "${CD_LIBC_VER}" ]]; then
     einfo "Using glibc version: ${CD_LIBC_VER}";
+    CD_CROSSDEV_EMERGE_ARGS+=("=sys-libs/glibc-${CD_LIBC_VER}")
   else
-    CD_LIBC_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-libs/glibc))
-    einfo "No glibc version specified, using: ${CD_LIBC_VER}";
+    CD_LIBC_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-libs/glibc 2> /dev/null) 2> /dev/null)
+    if [[ ! -z "${CD_LIBC_VER}" ]]; then
+      einfo "No glibc version specified, using: ${CD_LIBC_VER}";
+      CD_CROSSDEV_EMERGE_ARGS+=("=sys-libs/glibc-${CD_LIBC_VER}")
+    else
+      einfo "No glibc version specified, using latest";
+      CD_CROSSDEV_EMERGE_ARGS+=("sys-libs/glibc")
+    fi
   fi
-  CD_CROSSDEV_EMERGE_ARGS+=("=sys-libs/glibc-${CD_LIBC_VER}")
 fi
 
 CD_CROSSDEV_EMERGE_ARGS+=("virtual/os-headers")
 if [[ ! -z "${CD_KERNEL_VER}" ]]; then
   einfo "Using kernel version: ${CD_KERNEL_VER}";
+  CD_CROSSDEV_EMERGE_ARGS+=("=sys-kernel/linux-headers-${CD_KERNEL_VER}")
 else
   if [[ ! -z "${CD_USE_RPI}" ]]; then
     CD_KERNEL_VER="4.19"
     einfo "Using rpi kernel version: ${CD_KERNEL_VER}";
+    CD_CROSSDEV_EMERGE_ARGS+=("=sys-kernel/linux-headers-${CD_KERNEL_VER}")
   else
-    CD_KERNEL_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-kernel/linux-headers))
-    einfo "No kernel version specified, using: ${CD_KERNEL_VER}";
+    CD_KERNEL_VER=$(qatom -F '%{PVR}' $(qlist -Ive sys-kernel/linux-headers 2> /dev/null) 2> /dev/null)
+    if [[ ! -z "${CD_KERNEL_VER}" ]]; then
+      einfo "No kernel version specified, using: ${CD_KERNEL_VER}";
+      CD_CROSSDEV_EMERGE_ARGS+=("=sys-kernel/linux-headers-${CD_KERNEL_VER}")
+    else
+      einfo "No kernel version specified, using latest";
+      CD_CROSSDEV_EMERGE_ARGS+=("sys-kernel/linux-headers")
+    fi
   fi
 fi
-CD_CROSSDEV_EMERGE_ARGS+=("=sys-kernel/linux-headers-${CD_KERNEL_VER}")
 
 if [[ ! -z "${CD_GCC_VER}" ]]; then
   einfo "Using gcc version: ${CD_GCC_VER}";
+  CD_CROSSDEV_EMERGE_ARGS+=("=sys-devel/gcc-${CD_GCC_VER}")
 else
-  CD_GCC_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/gcc) | cut -d' ' -f1))
-  einfo "No gcc version specified, using: ${CD_GCC_VER}";
+  CD_GCC_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/gcc) 2> /dev/null | cut -d' ' -f1) 2> /dev/null)
+  if [[ ! -z "${CD_GCC_VER}" ]]; then
+    einfo "No gcc version specified, using: ${CD_GCC_VER}";
+    CD_CROSSDEV_EMERGE_ARGS+=("=sys-devel/gcc-${CD_GCC_VER}")
+  else
+    einfo "No gcc version specified, using latest";
+    CD_CROSSDEV_EMERGE_ARGS+=("sys-devel/gcc")
+  fi
 fi
-CD_CROSSDEV_EMERGE_ARGS+=("=sys-devel/gcc-${CD_GCC_VER}")
 
 if [[ ! -z "${CD_BINUTILS_VER}" ]]; then
   einfo "Using binutils version: ${CD_BINUTILS_VER}";
+  CD_CROSSDEV_EMERGE_ARGS+=("=sys-devel/binutils-${CD_BINUTILS_VER}")
 else
-  CD_BINUTILS_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/ld) | cut -d' ' -f1))
-  einfo "No binutils version specified, using: ${CD_BINUTILS_VER}";
+  CD_BINUTILS_VER=$(qatom -F '%{PVR}' $(qfile -v $(realpath /usr/bin/ld) 2> /dev/null | cut -d' ' -f1) 2> /dev/null)
+  if [[ ! -z "${CD_BINUTILS_VER}" ]]; then
+    einfo "No binutils version specified, using: ${CD_BINUTILS_VER}";
+    CD_CROSSDEV_EMERGE_ARGS+=("=sys-devel/binutils-${CD_BINUTILS_VER}")
+  else
+    einfo "No binutils version specified, using latest";
+    CD_CROSSDEV_EMERGE_ARGS+=("sys-devel/binutils")
+  fi
 fi
-CD_CROSSDEV_EMERGE_ARGS+=("=sys-devel/binutils-${CD_BINUTILS_VER}")
 
 if [[ -f "${CD_CONFIG_DIR}/crossdev-bootstrap-pre" ]]; then
   ebegin "Executing crossdev bootstrap pre hook"
@@ -131,6 +195,11 @@ eend 0
 ebegin "Starting crossdev emerge with: ${CD_CROSSDEV_EMERGE_ARGS[*]}"
 export CD_TARGET CD_TARGET_DIR CD_CONFIG_DIR
 ${CD_SCRIPT_DIR}/crossdev-emerge --ask --tree --usepkg-exclude="*" "${CD_CROSSDEV_EMERGE_ARGS[@]}" || cd_die
+eend 0
+
+ebegin "Linking lib64 dirs to lib dirs, if possible"
+ln -fs ./lib "${CD_TARGET_DIR}/usr/lib64"
+ln -fs ./lib "${CD_TARGET_DIR}/lib64"
 eend 0
 
 if [[ -f "${CD_CONFIG_DIR}/crossdev-bootstrap-post" ]]; then

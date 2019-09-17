@@ -1,0 +1,3 @@
+virtual/lua luajit deprecated
+dev-lang/luajit lua52compat
+dev-lua/lanes luajit2

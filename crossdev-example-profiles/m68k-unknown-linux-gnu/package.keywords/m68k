@@ -1,0 +1,65 @@
+# required by sys-apps/iproute2-5.2.0-r1::gentoo
+# required by @system
+# required by @world (argument)
+dev-libs/libbsd **
+# required by app-crypt/gnupg-2.2.17::gentoo
+# required by app-portage/gemato-14.1::gentoo[gpg]
+# required by sys-apps/portage-2.3.76::gentoo[-build,rsync-verify]
+# required by virtual/package-manager-1::gentoo
+# required by @system
+# required by @world (argument)
+app-crypt/pinentry **
+# required by app-crypt/pinentry-1.1.0-r3::gentoo
+# required by app-crypt/gnupg-2.2.17::gentoo
+# required by app-portage/gemato-14.1::gentoo[gpg]
+# required by sys-apps/portage-2.3.76::gentoo[-build,rsync-verify]
+# required by virtual/package-manager-1::gentoo
+# required by @system
+# required by @world (argument)
+app-eselect/eselect-pinentry **
+# required by app-portage/portage-utils-0.80::core[-static,qmanifest]
+# required by sys-auth/pambase-20190402::gentoo
+# required by sys-apps/openrc-0.42.1::gentoo[pam]
+# required by net-misc/netifrc-0.6.1::gentoo
+app-crypt/gpgme **
+# required by net-libs/gnutls-3.6.9::gentoo
+# required by app-crypt/gnupg-2.2.17::gentoo[ssl]
+# required by app-portage/gemato-14.1::gentoo[gpg]
+# required by sys-apps/portage-2.3.76::gentoo[-build,rsync-verify]
+# required by virtual/package-manager-1::gentoo
+# required by @system
+# required by @world (argument)
+dev-libs/nettle **
+# required by app-portage/portage-utils-0.80::core[-static,qmanifest]
+# required by sys-auth/pambase-20190402::gentoo
+# required by sys-apps/openrc-0.42.1::gentoo[pam]
+# required by net-misc/netifrc-0.6.1::gentoo
+app-crypt/libb2 **
+# required by net-misc/curl-7.66.0::gentoo[rtmp]
+# required by app-crypt/gnupg-2.2.17::gentoo
+# required by app-portage/gemato-14.1::gentoo[gpg]
+# required by sys-apps/portage-2.3.76::gentoo[-build,rsync-verify]
+# required by virtual/package-manager-1::gentoo
+# required by @system
+# required by @world (argument)
+=media-video/rtmpdump-9999 **
+# required by app-crypt/gnupg-2.2.17::gentoo
+# required by app-portage/gemato-14.1::gentoo[gpg]
+# required by sys-apps/portage-2.3.76::gentoo[-build,rsync-verify]
+# required by virtual/package-manager-1::gentoo
+# required by @system
+# required by @world (argument)
+dev-libs/libassuan **
+# required by app-crypt/gnupg-2.2.17::gentoo
+# required by app-portage/gemato-14.1::gentoo[gpg]
+# required by sys-apps/portage-2.3.76::gentoo[-build,rsync-verify]
+# required by virtual/package-manager-1::gentoo
+# required by @system
+# required by @world (argument)
+dev-libs/libksba **
+# required by app-portage/gemato-14.1::gentoo[bzip2,python_targets_python2_7]
+# required by sys-apps/portage-2.3.76::gentoo[-build,rsync-verify]
+# required by virtual/package-manager-1::gentoo
+# required by @system
+# required by @world (argument)
+dev-python/bz2file **

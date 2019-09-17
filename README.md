@@ -4,7 +4,7 @@ Cross-compile workarounds to use on environments created with `crossdev`
 ## Still being worked on
 Some packages may still not compile as it was tested on only a handful of packages.
 
-In combination with my overlay I was able to cross-compile an entire stage3 for the following targets: `aarch64-rpi3hs-linux-musleabi`, `aarch64-rpi3s-linux-gnueabi`, `armv7a-rpi2hs-linux-musleabihf`, `armv7a-rpi2s-linux-gnueabih`, `armv6j-rpi1hs-linux-musleabihf`, `armv6j-rpi1s-linux-gnueabihf`
+In combination with my overlay I was able to cross-compile an entire stage3 for the following targets: `aarch64-rpi3hs-linux-musleabi`, `aarch64-rpi3s-linux-gnueabi`, `armv7a-rpi2hs-linux-musleabihf`, `armv7a-rpi2s-linux-gnueabih`, `armv6j-rpi1hs-linux-musleabihf`, `armv6j-rpi1s-linux-gnueabihf`, `m68k-unknown-linux-gnu`
 
 Perl and Python sometimes, when not using multilib, still install in `/usr/<target>/*/lib64` where it should install in `/usr/<target>/*/lib`. I solved this by creating symbolic links from `/usr/<target>/*/lib64` to `/usr/<target>/*/lib`.
 
@@ -77,10 +77,11 @@ Usage:
 ```
 usage: crossdev-emerge ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 ```
 Example:
 ```
@@ -93,10 +94,11 @@ Usage:
 ```
 usage: crossdev-emerge ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 ```
 Example:
 ```
@@ -109,10 +111,11 @@ Usage:
 ```
 usage: crossdev-clean ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 ```
 Example:
 ```
@@ -126,17 +129,46 @@ Usage:
 ```
 usage: crossdev-create ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-use-rpi (Use RPi supported kernel)
 --cd-use-musl (Use musl as the libc)
 --cd-use-glibc (Use glibc as the libc)
+--cd-gcc-ver (Override GCC version to use)
+--cd-libc-ver (Override libc version to use)
+--cd-kernel-ver (Override kernel version to use)
+--cd-binutils-ver (Override binutils version to use)
 ```
 Example:
 ```
 ./crossdev-create --cd-use-rpi --cd-target aarch64-rpi3s-linux-gnueabi
+```
+
+### crossdev-bootstrap
+
+Usage:
+```
+usage: crossdev-bootstrap ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-prefix-dir "<prefix dir>" (empty)
+--cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
+--cd-use-rpi (Use RPi supported kernel)
+--cd-use-musl (Use musl as the libc)
+--cd-use-glibc (Use glibc as the libc)
+--cd-gcc-ver (Override GCC version to use)
+--cd-libc-ver (Override libc version to use)
+--cd-kernel-ver (Override kernel version to use)
+--cd-binutils-ver (Override binutils version to use)
+```
+Example:
+```
+./crossdev-bootstrap --cd-use-rpi --cd-target aarch64-rpi3s-linux-gnueabi
 ```
 
 ### crossdev-install-rpi3-firmware
@@ -145,10 +177,11 @@ Usage:
 ```
 usage: crossdev-install-rpi3-firmware ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 ```
 Example:
 ```
@@ -163,10 +196,11 @@ Usage:
 ```
 usage: crossdev-install-qemu-wrapper ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-use-rpi1 (Use RPi1 equivalent CPU for wrapper)
 --cd-use-rpi2 (Use RPi2 equivalent CPU for wrapper)
 --cd-use-rpi3 (Use RPi3 equivalent CPU for wrapper)
@@ -189,10 +223,11 @@ Usage:
 ```
 usage: crossdev-cow-env-init ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 ```
 Example:
 ```
@@ -212,10 +247,11 @@ Usage:
 ```
 usage: crossdev-cow-env-init ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 ```
 Example:
 ```
@@ -230,10 +266,11 @@ Usage:
 ```
 usage: crossdev-cow-env-uninit ...
 --cd-help (This help)
---cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
---cd-target-dir "<target dir>" (/usr/<target>)
+--cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 ```
 Example:
 ```

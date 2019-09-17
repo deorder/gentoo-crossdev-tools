@@ -1,0 +1,1 @@
+/usr/portage/profiles/default/linux/m68k/17.0/

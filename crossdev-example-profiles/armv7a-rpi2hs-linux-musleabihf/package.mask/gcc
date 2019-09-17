@@ -1,1 +1,2 @@
->=sys-devel/gcc-9
+>sys-devel/gcc-8.3.0-r1
+<sys-devel/gcc-8.3.0-r1

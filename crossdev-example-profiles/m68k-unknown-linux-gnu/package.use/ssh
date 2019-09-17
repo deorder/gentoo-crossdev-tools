@@ -1,0 +1,2 @@
+# Install OpenSSH instead of Dropbear
+virtual/ssh -minimal
