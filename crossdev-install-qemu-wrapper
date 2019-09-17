@@ -12,6 +12,9 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
+      *-cd-qemu-arch=*)
+      CD_QEMU_ARCH="${1#*=}"
+      ;;
       *-cd-qemu-arch)
       shift; CD_QEMU_ARCH=${1}
       ;;
