@@ -14,6 +14,12 @@ fi
 
 if [ -d "${CD_TARGET_DIR}" ]; then
 
+  if [[ -f "${CD_CONFIG_DIR}/crossdev-mount-pre" ]]; then
+    ebegin "Executing crossdev mount pre hook"
+    source "${CD_CONFIG_DIR}/crossdev-mount-pre" || cd_die
+    eend 0
+  fi
+
   ebegin "Mounting ${CD_TARGET_DIR}/sys"
   mkdir -p "${CD_TARGET_DIR}/sys" || cd_die
   cd_is_mount "${CD_TARGET_DIR}/sys" || mount --bind /sys "${CD_TARGET_DIR}/sys" || cd_die
@@ -33,6 +39,12 @@ if [ -d "${CD_TARGET_DIR}" ]; then
   mkdir -p "${CD_TARGET_DIR}/dev/pts" || cd_die
   cd_is_mount "${CD_TARGET_DIR}/dev/pts" || mount --bind /dev/pts "${CD_TARGET_DIR}/dev/pts" || cd_die
   eend 0
+
+  if [[ -f "${CD_CONFIG_DIR}/crossdev-mount-post" ]]; then
+    ebegin "Executing crossdev mount post hook"
+    source "${CD_CONFIG_DIR}/crossdev-mount-post" || cd_die
+    eend 0
+  fi
 
 else 
   eerror "Target dir ${CD_TARGET_DIR} does not exist, cannot mount"

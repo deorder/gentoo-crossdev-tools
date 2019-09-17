@@ -14,6 +14,12 @@ fi
 
 if [ -d "${CD_TARGET_DIR}" ]; then
 
+  if [[ -f "${CD_CONFIG_DIR}/crossdev-umount-pre" ]]; then
+    ebegin "Executing crossdev umount pre hook"
+    source "${CD_CONFIG_DIR}/crossdev-umount-pre" || cd_die
+    eend 0
+  fi
+
   ebegin "Unmounting ${CD_TARGET_DIR}/dev/pts"
   cd_is_mount "${CD_TARGET_DIR}/dev/pts" && (umount -R "${CD_TARGET_DIR}/dev/pts" || cd_die)
   eend 0
@@ -29,6 +35,12 @@ if [ -d "${CD_TARGET_DIR}" ]; then
   ebegin "Unmounting ${CD_TARGET_DIR}/sys"
   cd_is_mount "${CD_TARGET_DIR}/sys" && (umount -R "${CD_TARGET_DIR}/sys" || cd_die)
   eend 0
+
+  if [[ -f "${CD_CONFIG_DIR}/crossdev-umount-post" ]]; then
+    ebegin "Executing crossdev umount post hook"
+    source "${CD_CONFIG_DIR}/crossdev-umount-post" || cd_die
+    eend 0
+  fi
 
 else 
   eerror "Target dir ${CD_TARGET_DIR} does not exist, cannot unmount"
