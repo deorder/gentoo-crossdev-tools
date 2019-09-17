@@ -37,11 +37,17 @@ fi
 
 if [ -d "${CD_TARGET_DIR}" ]; then
   if [ -f "/usr/bin/qemu-${CD_QEMU_ARCH}" ]; then
-    if [ -f "${CD_SCRIPT_DIR}/crossdev-qemu-wrapper/qemu-wrapper-${CD_TARGET}.c" ]; then
+    if [ -f "${CD_CONFIG_DIR}/qemu-wrapper-${CD_TARGET}.c" ]; then
+      CD_QEMU_WRAPPER_FILE="${CD_CONFIG_DIR}/qemu-wrapper-${CD_TARGET}.c"
+    else
+      CD_QEMU_WRAPPER_FILE="${CD_SCRIPT_DIR}/crossdev-qemu-wrapper/qemu-wrapper-${CD_TARGET}.c"
+    fi
+    if [ -f "${CD_QEMU_WRAPPER_FILE}" ]; then
         ebegin "Installing qemu user emulation in ${CD_TARGET_DIR} for ${CD_QEMU_ARCH} using a custom wrapper"
         cp -a "/usr/bin/qemu-${CD_QEMU_ARCH}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}-real" || cd_die
-        gcc -static "${CD_SCRIPT_DIR}/crossdev-qemu-wrapper/qemu-wrapper-${CD_TARGET}.c" -O3 -s -o "/tmp/qemu-wrapper-${CD_TARGET}" || cd_die
+        gcc -static "${CD_QEMU_WRAPPER_FILE}" -O3 -s -o "/tmp/qemu-wrapper-${CD_TARGET}" || cd_die
         cp -a "/tmp/qemu-wrapper-${CD_TARGET}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
+        chmod 755 "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
         rm -f "/tmp/qemu-wrapper-${CD_TARGET}" || cd_die
         eend 0
     else
