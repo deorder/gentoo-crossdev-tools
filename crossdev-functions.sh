@@ -102,6 +102,10 @@ cd_print_usage_header() {
   echo "--cd-tmp-dir \"<temp dir>\" (${CD_TMP_DIR:-"$(portageq envvar PORTAGE_TMPDIR)"})"
 }
 
+cd_is_installed() {
+  ! find "${1}/var/db/pkg/${2}" -type d -name "${3}-*" | grep -q "${3}"
+}
+
 cd_die() {
   ERROR=$?; eend ${ERROR};
   if [[ ! -z "${CD_DEBUG}" ]]; then
