@@ -13,13 +13,13 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
-      --cd-use-rpi)
+      *-cd-use-rpi)
       CD_USE_RPI=1
       ;;
-      --cd-use-musl)
+      *-cd-use-musl)
       CD_USE_LIBC="musl"
       ;;
-      --cd-use-glibc)
+      *-cd-use-glibc)
       CD_USE_LIBC="glibc"
       ;;
       --)

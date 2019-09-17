@@ -12,22 +12,22 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
-      --cd-qemu-arch)
+      *-cd-qemu-arch)
       shift; CD_QEMU_ARCH=${1}
       ;;
-      --cd-use-rpi1)
+      *-cd-use-rpi1)
       CD_QEMU_ARGS+=("-cpu")
       CD_QEMU_ARGS+=("arm1176")
       ;;
-      --cd-use-rpi2)
+      *-cd-use-rpi2)
       CD_QEMU_ARGS+=("-cpu")
       CD_QEMU_ARGS+=("cortex-a7")
       ;;
-      --cd-use-rpi3)
+      *-cd-use-rpi3)
       CD_QEMU_ARGS+=("-cpu")
       CD_QEMU_ARGS+=("cortex-a53")
       ;;
-      --cd-use-rpi4)
+      *-cd-use-rpi4)
       CD_QEMU_ARGS+=("-cpu")
       CD_QEMU_ARGS+=("cortex-a72")
       ;;
@@ -100,7 +100,6 @@ EOF
     gcc -static "${CD_QEMU_WRAPPER_SRC_FILE}" -O3 -s -o "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" || cd_die
     cp -a "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
     chmod 755 "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
-    rm -f "${CD_QEMU_WRAPPER_SRC_FILE}" || cd_die
     eend 0
   else
     eerror "No qemu user emulation binary for ${CD_TARGET} found, rebuild qemu with USE=\"qemu_user_targets_${CD_QEMU_ARCH}\""

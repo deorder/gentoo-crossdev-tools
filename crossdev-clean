@@ -12,7 +12,7 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
-      --cd-confirm)
+      *-cd-confirm)
       CD_CONFIRM=1
       ;;
       --)

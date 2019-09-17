@@ -13,35 +13,42 @@ cd_parse_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
-      --cd-help)
+      *-cd-help)
       CD_HELP=1
       ;;
-      --cd-target)
+      *-cd-target)
       shift; CD_TARGET="${1}"
       ;;
-      --cd-target=*)
+      *-cd-target=*)
       CD_TARGET="${1#*=}"
       ;;
-      --cd-tmp-dir)
+      *-cd-tmp-dir)
       shift; CD_TMP_DIR="${1}"
       ;;
-      --cd-tmp-dir=*)
+      *-cd-tmp-dir=*)
       CD_TMP_DIR="${1#*=}"
       ;;
-      --cd-target-dir)
+      *-cd-target-dir)
       shift; CD_TARGET_DIR="${1}"
       ;;
-      --cd-target-dir=*)
+      *-cd-target-dir=*)
       CD_TARGET_DIR="${1#*=}"
       ;;
-      --cd-config-dir)
+      *-cd-config-dir)
       shift; CD_CONFIG_DIR="${1}"
       ;;
-      --cd-config-dir=*)
+      *-cd-config-dir=*)
       CD_CONFIG_DIR="${1#*=}"
       ;;
-      -h|--help)
+      -h|-help|--help)
       einfo "Use --cd-help to get more options"
+      ;;
+      --)
+      while (( ${#@} )); do
+        CD_ARGS+=(${1})
+        shift
+      done
+      break
       ;;
       *)
       CD_ARGS+=(${1})
