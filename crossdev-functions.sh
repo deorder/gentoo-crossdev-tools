@@ -61,6 +61,8 @@ cd_parse_arguments() {
     fi
   fi
 
+  export CD_TARGET CD_TARGET_DIR CD_CONFIG_DIR
+
 }
 
 cd_print_usage_header() {
@@ -78,3 +80,5 @@ cd_die() {
   fi
   exit 1
 }
+
+export CD_SCRIPT_DIR CD_SCRIPT_FILE
