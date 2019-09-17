@@ -11,7 +11,7 @@ Perl and Python sometimes, when not using multilib, still install in `/usr/<targ
 ## How to use
 
 Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
-```bash
+```
 ./crossdev-create --cd-target armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
 ./crossdev-bootstrap --cd-use-rpi --cd-target armv7a-rpi2s-linux-gnueabihf
@@ -19,7 +19,7 @@ cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi
 ```
 
 Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
-```bash
+```
 ./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi2
 ./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
 mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
@@ -34,8 +34,14 @@ umount /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 
 To let it automatically mount/unmount `/usr/portage`, create the following files:
 
-The file `/etc/crossdev/crossdev-mount-post` containing:
+The file `/etc/crossdev/crossdev-emerge-pre` containing:
+```bash
+#!/bin/bash
+${CD_SCRIPT_DIR}/crossdev-mount --cd-target ${CD_TARGET} --cd-target-dir "${CD_TARGET_DIR}"
 ```
+
+The file `/etc/crossdev/crossdev-mount-post` containing:
+```bash
 #!/bin/bash
 
 source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
@@ -49,7 +55,7 @@ fi
 ```
 
 The file `/etc/crossdev/crossdev-umount-pre` containing:
-```
+```bash
 #!/bin/bash
 
 source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
@@ -60,6 +66,7 @@ if [ -d "${CD_TARGET_DIR}" ]; then
   eend 0
 fi
 ```
+
 
 ### crossdev-emerge
 
