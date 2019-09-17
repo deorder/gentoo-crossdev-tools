@@ -28,7 +28,7 @@ fi
 
 if cd_is_mount "${CD_UNION_PREFIX_DIR}"; then
   ebegin "Entering environment"
-  chroot ${CD_UNION_PREFIX_DIR} /usr/bin/env -i CD_TARGET="${CD_TARGET}" CD_COWHOME="${PWD}" HOME="${HOME}" TERM="${TERM}" PS1="${PS1}" /bin/bash --rcfile "${CD_BASH_RC_FILE}" || cd_die
+  chroot "${CD_UNION_PREFIX_DIR}" /usr/bin/env -i CD_TARGET="${CD_TARGET}" CD_COWHOME="${PWD}" HOME="${HOME}" TERM="${TERM}" PS1="${PS1}" /bin/bash --rcfile "${CD_BASH_RC_FILE}" || cd_die
   eend 0
 else
   eerror "Union prefix dir ${CD_UNION_PREFIX_DIR} does not exist, cannot enter"
