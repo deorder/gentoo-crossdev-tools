@@ -49,7 +49,7 @@ source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
 if [ -d "${CD_TARGET_DIR}" ]; then
   ebegin "Mounting ${CD_TARGET_DIR}/usr/portage"
   mkdir -p "${CD_TARGET_DIR}/usr/portage" || cd_die
-  cd_is_mount "${CD_TARGET_DIR}/usr/portage" || mount -o bind /usr/portage "${CD_TARGET_DIR}/usr/portage" || cd_die
+  cd_is_mount "${CD_TARGET_DIR}/usr/portage" || mount -o bind "$(portageq get_repo_path / gentoo)" "${CD_TARGET_DIR}/usr/portage" || cd_die
   eend 0
 fi
 ```
