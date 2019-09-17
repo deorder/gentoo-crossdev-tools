@@ -1,34 +1,69 @@
 #!/bin/bash
 
-TARGET=$1
-shift
-TARGET_DIR=$1
-shift
-CONFIRM=$1
-shift
-SCRIPT_DIR=$(dirname "$0")
+CD_CROSSDEV_ARGS=()
 
-if [[ -z "${TARGET_DIR}" ]]; then
-  TARGET_DIR="${TARGET_DIR}"
+CD_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]:-${0}}")
+CD_SCRIPT_FILE=$(basename "${BASH_SOURCE[0]:-${0}}")
+
+source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+cd_parse_extra_arguments() {
+
+  while (( ${#1} )); do
+    case ${1} in
+      --cd-confirm)
+      CD_CONFIRM=1
+      ;;
+      --)
+      shift;
+      while (( ${#@} )); do
+        CD_CROSSDEV_ARGS+=(${1})
+        shift
+      done
+      break
+      ;;
+      *)
+      CD_CROSSDEV_ARGS+=(${1})
+      ;;
+    esac
+    shift
+  done
+
+}
+
+cd_parse_extra_arguments "${CD_ARGS[@]}"
+
+if [[ ! -z "${CD_HELP}" ]]; then
+  cd_print_usage_header
+  exit 1
 fi
 
-if [[ "${CONFIRM}" == "ICONFIRM" ]]; then
-  echo "Confirmed clean"
+if [[ ! -z "${CD_CONFIRM}" ]]; then
+  ebegin "Cleaning crossdev environment ${CD_TARGET}"
 
-  if [[ -f "${SCRIPT_DIR}/crossdev-clean-pre" ]]; then
-    source "${SCRIPT_DIR}/crossdev-clean-pre"
+  if [[ -f "${CD_CONFIG_DIR}/crossdev-clean-pre" ]]; then
+    ebegin "Executing crossdev clean pre hook"
+    source "${CD_CONFIG_DIR}/crossdev-clean-pre" || cd_die
+    eend 0
   fi
 
   if mount | grep -q "${TARGET_DIR}"; then
-    echo "Mounted filesystems in subirectories detected, exiting"; exit 0
+    eerror "Mounted filesystems in subdirectories detected, exiting"; exit 0
   fi
 
-  CFLAGS="-O2 -pipe" CXXFLAGS="-O2 -pipe" PORTDIR_OVERLAY="" crossdev -C --target ${TARGET}
+  ebegin "Starting real crossdev with: ${CD_CROSSDEV_ARGS[*]}"
+  CFLAGS="-O2 -pipe" CXXFLAGS="-O2 -pipe" PORTDIR_OVERLAY="" crossdev -C --target ${CD_TARGET} "${CD_CROSSDEV_ARGS[@]}" || cd_die
+  eend 0
 
-  if [[ -f "${SCRIPT_DIR}/crossdev-clean-post" ]]; then
-    source "${SCRIPT_DIR}/crossdev-clean-post"
+  if [[ -f "${CD_CONFIG_DIR}/crossdev-clean-post" ]]; then
+    ebegin "Executing crossdev clean post hook"
+    source "${CD_CONFIG_DIR}/crossdev-clean-post" || cd_die
+    eend 0
   fi
 
+  eend 0
 else
-  echo "Confirm with ICONFIRM as the 3th argument"
+  ewarn "Are you sure? If yes, add --cd-confirm as an argument"
 fi

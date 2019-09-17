@@ -1,31 +1,42 @@
 #!/bin/bash
 
-TARGET=$1
-shift
-TARGET_DIR=$1
-shift
-SCRIPT_DIR=$(dirname "$0")
+CD_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]:-${0}}")
+CD_SCRIPT_FILE=$(basename "${BASH_SOURCE[0]:-${0}}")
 
-if [[ -z "${TARGET_DIR}" ]]; then
-  TARGET_DIR="/usr/${TARGET}"
+source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+if [[ ! -z "${CD_HELP}" ]]; then
+  cd_print_usage_header
+  exit 1
 fi
 
-is_mount() {
-  path=$(readlink -f $1)
-  grep -q "$path" /proc/mounts
-}
+CD_COW_PREFIX_DIR=/tmp/cow-${CD_TARGET}
+CD_UNION_PREFIX_DIR=/tmp/union-${CD_TARGET}
 
-COW_PREFIX_DIR=/tmp/cow-${TARGET}
-UNION_PREFIX_DIR=/tmp/union-${TARGET}
-
-if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-enter-pre" ]]; then
-  source "${SCRIPT_DIR}/crossdev-cow-env-enter-pre"
+if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-bashrc" ]; then
+  CD_BASH_RC_FILE="${CD_CONFIG_DIR}/crossdev-cow-env-bashrc"
+else
+  CD_BASH_RC_FILE="${CD_SCRIPT_DIR}/crossdev-cow-env-bashrc"
 fi
 
-if is_mount "${UNION_PREFIX_DIR}"; then
-  chroot ${UNION_PREFIX_DIR} /usr/bin/env -i TARGET="${TARGET}" COWHOME="${PWD}" HOME="${HOME}" TERM="${TERM}" PS1="${PS1}" /bin/bash --rcfile ${PWD}/crossdev-cow-env-bashrc
+if [[ -f "${CD_CONFIG_DIR}/crossdev-cow-env-enter-pre" ]]; then
+  ebegin "Executing crossdev cow env enter pre hook"
+  source "${CD_CONFIG_DIR}/crossdev-cow-env-enter-pre" || cd_die
+  eend 0
 fi
 
-if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-enter-post" ]]; then
-  source "${SCRIPT_DIR}/crossdev-cow-env-enter-post"
+if cd_is_mount "${CD_UNION_PREFIX_DIR}"; then
+  ebegin "Entering environment"
+  chroot ${CD_UNION_PREFIX_DIR} /usr/bin/env -i CD_TARGET="${CD_TARGET}" CD_COWHOME="${PWD}" HOME="${HOME}" TERM="${TERM}" PS1="${PS1}" /bin/bash --rcfile "${CD_BASH_RC_FILE}" || cd_die
+  eend 0
+else
+  eerror "Union prefix dir ${CD_UNION_PREFIX_DIR} does not exist, cannot enter"
+fi
+
+if [[ -f "${CD_CONFIG_DIR}/crossdev-cow-env-enter-post" ]]; then
+  ebegin "Executing crossdev cow env enter post hook"
+  source "${CD_CONFIG_DIR}/crossdev-cow-env-enter-post" || cd_die
+  eend 0
 fi

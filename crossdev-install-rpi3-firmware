@@ -1,31 +1,37 @@
 #!/bin/bash
 
-TARGET=$1
-shift
-TARGET_DIR=$1
-shift
-ARCH=$1
-shift
-SCRIPT_DIR=$(dirname "$0")
+CD_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]:-${0}}")
+CD_SCRIPT_FILE=$(basename "${BASH_SOURCE[0]:-${0}}")
 
-if [[ -z "${TARGET_DIR}" ]]; then
-  TARGET_DIR="/usr/${TARGET}"
+source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+if [[ ! -z "${CD_HELP}" ]]; then
+  cd_print_usage_header
+  exit 1
 fi
 
-if [ ! -f "${TARGET_DIR}/usr/src/linux/arch/arm64/boot/Image" ]; then
-  echo "Build ${TARGET} kernel in \"${TARGET_DIR}\" first, exiting"; exit 0
+if [ ! -f "${CD_TARGET_DIR}/usr/src/linux/arch/arm64/boot/Image" ]; then
+  eerror "First build ${CD_TARGET} kernel in \"${CD_TARGET_DIR}\" first, exiting"; exit 0
 fi
 
-if [ -d "${TARGET_DIR}" ]; then
+if [ -d "${CD_TARGET_DIR}" ]; then
   
+  ebegin "Installing RPi3 firmware in ${CD_TARGET_DIR}"
+
   if [ ! -d "/tmp/rpi-firmware" ]; then
-    git clone --depth=1 https://github.com/raspberrypi/firmware.git /tmp/rpi-firmware
+    git clone --depth=1 https://github.com/raspberrypi/firmware.git "/tmp/rpi-firmware" || cd_die
   fi
 
-  mkdir -p ${TARGET_DIR}/boot
-  cp -rav /tmp/rpi-firmware/boot/* ${TARGET_DIR}/boot/
-  cp -av ${TARGET_DIR}/usr/src/linux/arch/arm64/boot/Image ${TARGET_DIR}/boot/kernel8.img
-  cp -av ${TARGET_DIR}/usr/src/linux/arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb ${TARGET_DIR}/boot
-  cp -av ${TARGET_DIR}/usr/src/linux/arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b-plus.dtb ${TARGET_DIR}/boot
+  mkdir -p ${CD_TARGET_DIR}/boot
+  cp -rav /tmp/rpi-firmware/boot/* "${CD_TARGET_DIR}/boot/" || cd_die
+  cp -av "${CD_TARGET_DIR}/usr/src/linux/arch/arm64/boot/Image" "${CD_TARGET_DIR}/boot/kernel8.img" || cd_die
+  cp -av "${CD_TARGET_DIR}/usr/src/linux/arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb" "${CD_TARGET_DIR}/boot" || cd_die
+  cp -av "${CD_TARGET_DIR}/usr/src/linux/arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b-plus.dtb" "${CD_TARGET_DIR}/boot" || cd_die
 
+  eend 0
+
+else 
+  eerror "Target dir ${CD_TARGET_DIR} does not exist, cannot install RPi3 firmware"
 fi

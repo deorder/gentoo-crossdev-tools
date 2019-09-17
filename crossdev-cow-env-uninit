@@ -1,33 +1,47 @@
 #!/bin/bash
 
-TARGET=$1
-shift
-TARGET_DIR=$1
-shift
-SCRIPT_DIR=$(dirname "$0")
+CD_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]:-${0}}")
+CD_SCRIPT_FILE=$(basename "${BASH_SOURCE[0]:-${0}}")
 
-if [[ -z "${TARGET_DIR}" ]]; then
-  TARGET_DIR="/usr/${TARGET}"
+source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+if [[ ! -z "${CD_HELP}" ]]; then
+  cd_print_usage_header
+  exit 1
 fi
 
-is_mount() {
-  path=$(readlink -f $1)
-  grep -q "$path" /proc/mounts
-}
+CD_COW_PREFIX_DIR=/tmp/cow-${CD_TARGET}
+CD_UNION_PREFIX_DIR=/tmp/union-${CD_TARGET}
 
-COW_PREFIX_DIR=/tmp/cow-${TARGET}
-UNION_PREFIX_DIR=/tmp/union-${TARGET}
+mkdir -p "${CD_COW_PREFIX_DIR}"
+mkdir -p "${CD_UNION_PREFIX_DIR}"
 
-if [[ -d ${UNION_PREFIX_DIR} ]]; then
-  if is_mount ${UNION_PREFIX_DIR}; then
-    if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-uninit-pre" ]]; then
-      source "${SCRIPT_DIR}/crossdev-cow-env-uninit-pre"
+if [[ -d ${CD_UNION_PREFIX_DIR} ]]; then
+  if cd_is_mount ${CD_UNION_PREFIX_DIR}; then
+    if [[ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" ]]; then
+      ebegin "Executing crossdev cow env uninit pre hook"
+      source "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" || cd_die
+      eend 0
     fi
 
-    fuser -Mk ${UNION_PREFIX_DIR}; umount ${UNION_PREFIX_DIR}
+    ebegin "Uninitializing environment"
 
-    if [[ -f "${SCRIPT_DIR}/crossdev-cow-env-uninit-post" ]]; then
-      source "${SCRIPT_DIR}/crossdev-cow-env-uninit-post"
+    ebegin "Killing all remaining processes"
+    fuser -Mk "${CD_UNION_PREFIX_DIR}" || cd_die
+    eend 0
+
+    ebegin "Unmounting union"
+    umount "${CD_UNION_PREFIX_DIR}" || cd_die
+    eend 0
+
+    eend 0
+
+    if [[ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-post" ]]; then
+      ebegin "Executing crossdev cow env uninit post hook"
+      source "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-post" || cd_die
+      eend 0
     fi
   fi
 fi

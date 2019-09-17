@@ -1,32 +1,39 @@
 #!/bin/bash
 
-TARGET=$1
-shift
-TARGET_DIR=$1
-shift
-SCRIPT_DIR=$(dirname "$0")
+CD_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]:-${0}}")
+CD_SCRIPT_FILE=$(basename "${BASH_SOURCE[0]:-${0}}")
 
-if [[ -z "${TARGET_DIR}" ]]; then
-  TARGET_DIR="/usr/${TARGET}"
+source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+if [[ ! -z "${CD_HELP}" ]]; then
+  cd_print_usage_header
+  exit 1
 fi
 
-is_mount() {
-  path=$(readlink -f $1)
-  grep -q "$path" /proc/mounts
-}
+if [ -d "${CD_TARGET_DIR}" ]; then
 
-if [ -d "${TARGET_DIR}" ]; then
+  ebegin "Mounting ${CD_TARGET_DIR}/sys"
+  mkdir -p "${CD_TARGET_DIR}/sys" || cd_die
+  cd_is_mount "${CD_TARGET_DIR}/sys" || mount --bind /sys "${CD_TARGET_DIR}/sys" || cd_die
+  eend 0
 
-  mkdir -p ${TARGET_DIR}/sys
-  is_mount ${TARGET_DIR}/sys || mount --bind /sys ${TARGET_DIR}/sys
+  ebegin "Mounting ${CD_TARGET_DIR}/dev"
+  mkdir -p "${CD_TARGET_DIR}/dev" || cd_die
+  cd_is_mount "${CD_TARGET_DIR}/dev" || mount --bind /dev "${CD_TARGET_DIR}/dev" || cd_die
+  eend 0
 
-  mkdir -p ${TARGET_DIR}/dev
-  is_mount ${TARGET_DIR}/dev || mount --bind /dev ${TARGET_DIR}/dev
+  ebegin "Mounting ${CD_TARGET_DIR}/proc"
+  mkdir -p "${CD_TARGET_DIR}/proc" || cd_die
+  cd_is_mount "${CD_TARGET_DIR}/proc" || mount --bind /proc "${CD_TARGET_DIR}/proc" || cd_die
+  eend 0
 
-  mkdir -p ${TARGET_DIR}/proc
-  is_mount ${TARGET_DIR}/proc || mount --bind /proc ${TARGET_DIR}/proc
+  ebegin "Mounting ${CD_TARGET_DIR}/dev/pts"
+  mkdir -p "${CD_TARGET_DIR}/dev/pts" || cd_die
+  cd_is_mount "${CD_TARGET_DIR}/dev/pts" || mount --bind /dev/pts "${CD_TARGET_DIR}/dev/pts" || cd_die
+  eend 0
 
-  mkdir -p ${TARGET_DIR}/dev/pts
-  is_mount ${TARGET_DIR}/dev/pts || mount --bind /dev/pts ${TARGET_DIR}/dev/pts
-
+else 
+  eerror "Target dir ${CD_TARGET_DIR} does not exist, cannot mount"
 fi

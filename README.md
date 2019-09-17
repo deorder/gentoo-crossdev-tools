@@ -12,23 +12,23 @@ Perl and Python sometimes, when not using multilib, still install in `/usr/<targ
 
 Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
 ```
-./crossdev-create-hostlike-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+./crossdev-create --cd-target armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
-./crossdev-bootstrap-hostlike-glibc armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
-./crossdev-emerge-install-system armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+./crossdev-bootstrap --cd-use-rpi --cd-target armv7a-rpi2s-linux-gnueabihf
+./crossdev-emerge-install-system --cd-target armv7a-rpi2s-linux-gnueabihf
 ```
 
 Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
 ```
-./crossdev-install-qemu-wrapper armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
-./crossdev-mount armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm
+./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
 mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
 ```
 
 When done:
 ```
-./crossdev-umount armv7a-rpi2s-linux-gnueabihf /usr/armv7a-rpi2s-linux-gnueabihf
+./crossdev-umount --cd-target armv7a-rpi2s-linux-gnueabihf
 umount /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 ```
 
@@ -36,88 +36,79 @@ umount /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 
 Usage:
 ```
-./crossdev-emerge <target> <target dir> <emerge arguments...>
+usage: crossdev-emerge ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
 ```
 Example:
 ```
-./crossdev-emerge armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --oneshot portage 
+./crossdev-emerge armv7a-rpi2hs-linux-musleabihf --cd-target armv7a-rpi2hs-linux-musleabihf --oneshot portage 
 ```
 
 ### crossdev-emerge-upgrade-system
 
 Usage:
 ```
-./crossdev-emerge-upgrade-system <target> <target dir> <extra emerge arguments...>
+usage: crossdev-emerge ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
 ```
 Example:
 ```
-./crossdev-emerge-upgrade-system armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
-```
-
-### crossdev-bootstrap-hostlike-glibc
-
-Usage:
-```
-./crossdev-bootstrap-hostlike-glibc <target> <target dir> <extra emerge arguments...>
-```
-Example:
-```
-./crossdev-bootstrap-hostlike-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi --ask --tree
-```
-
-### crossdev-bootstrap-hostlike-musl
-
-Usage:
-```
-./crossdev-bootstrap-hostlike-musl <target> <target dir> <extra emerge arguments...>
-```
-Example:
-```
-./crossdev-bootstrap-hostlike-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf --ask --tree
+./crossdev-emerge-upgrade-system --cd-target armv7a-rpi2hs-linux-musleabihf --ask --tree
 ```
 
 ### crossdev-clean
 
 Usage:
 ```
-./crossdev-clean <target> <target dir> <confirm>
+usage: crossdev-clean ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
 ```
 Example:
 ```
-./crossdev-clean armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf ICONFIRM
+./crossdev-clean --cd-target armv7a-rpi2hs-linux-musleabihf
 ```
+**Note:** You still have to confirm. Follow the instructions while running the above command
 
-### crossdev-create-hostlike-glibc
+### crossdev-create
 
 Usage:
 ```
-./crossdev-create-hostlike-glibc <target> <target dir> <confirm>
+usage: crossdev-create ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-use-rpi (Use RPi supported kernel)
+--cd-use-musl (Use musl as the libc)
+--cd-use-glibc (Use glibc as the libc)
 ```
 Example:
 ```
-./crossdev-create-hostlike-glibc aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi
-```
-
-### crossdev-create-hostlike-musl
-
-Usage:
-```
-./crossdev-create-hostlike-musl <target> <target dir> <confirm>
-```
-Example:
-```
-./crossdev-create-hostlike-musl armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf
+./crossdev-create --cd-use-rpi --cd-target aarch64-rpi3s-linux-gnueabi
 ```
 
 ### crossdev-install-rpi3-firmware
 
 Usage:
 ```
-./crossdev-install-rpi3-firmware <target> <target dir>
+usage: crossdev-install-rpi3-firmware ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
 ```
 Example:
 ```
-./crossdev-install-rpi3-firmware aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi
+./crossdev-install-rpi3-firmware --cd-target aarch64-rpi3s-linux-gnueabi
 ```
   
 ### crossdev-install-qemu-wrapper
@@ -126,17 +117,22 @@ Example:
 
 Usage:
 ```
-./crossdev-install-qemu-wrapper <target> <target dir> <architecture>
+usage: crossdev-install-qemu-wrapper ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-qemu-arch (Architecture part of user emulation binary)
 ```
 Example:
 ```
-./crossdev-install-qemu-wrapper aarch64-rpi3s-linux-gnueabi /usr/aarch64-rpi3s-linux-gnueabi aarch64
+./crossdev-install-qemu-wrapper --cd-target aarch64-rpi3s-linux-gnueabi --cd-qemu-arch aarch64
 ```
 ```
-./crossdev-install-qemu-wrapper armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf arm
+./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2hs-linux-musleabihf --cd-qemu-arch arm
 ```
 
-If there is no wrapper for your target just copy an existing C file in `crossdev-qemu-wrapper`, then modify and rename it as needed
+**Note:** If there is no wrapper for your target just copy an existing C file in `crossdev-qemu-wrapper`, then modify and rename it as needed
 
 ### crossdev-cow-env-init
 
@@ -144,16 +140,20 @@ If there is no wrapper for your target just copy an existing C file in `crossdev
 
 Usage:
 ```
-./crossdev-cow-env-init <target> <target dir>
+usage: crossdev-cow-env-init ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
 ```
 Example:
 ```
-./crossdev-cow-env-init armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf
+./crossdev-cow-env-init --cd-target armv7a-rpi2hs-linux-musleabihf
 ```
 Before using this command you may want to create a `crossdev-cow-env-init-post` file containing:
 ```
 #!/bin/bash
-${SCRIPT_DIR}/crossdev-mount ${TARGET} ${UNION_PREFIX_DIR}
+${CD_SCRIPT_DIR}/crossdev-mount --cd-target "${CD_TARGET}" --cd-target-dir "${CD_UNION_PREFIX_DIR}"
 ```
 
 ### crossdev-cow-env-enter
@@ -162,11 +162,15 @@ ${SCRIPT_DIR}/crossdev-mount ${TARGET} ${UNION_PREFIX_DIR}
 
 Usage:
 ```
-./crossdev-cow-env-enter <target> <target dir>
+usage: crossdev-cow-env-init ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
 ```
 Example:
 ```
-./crossdev-cow-env-enter armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf
+./crossdev-cow-env-enter --cd-target armv7a-rpi2hs-linux-musleabihf
 ```
 
 ### crossdev-cow-env-uninit
@@ -175,14 +179,18 @@ Example:
 
 Usage:
 ```
-./crossdev-cow-env-uninit <target> <target dir>
+usage: crossdev-cow-env-uninit ...
+--cd-help (This help)
+--cd-target "<target triplet>" (required)
+--cd-target-dir "<target dir>" (/usr/<target>)
+--cd-config-dir "<config dir>" (/etc/crossdev)
 ```
 Example:
 ```
-./crossdev-cow-env-uninit armv7a-rpi2hs-linux-musleabihf /usr/armv7a-rpi2hs-linux-musleabihf
+./crossdev-cow-env-uninit --cd-target armv7a-rpi2hs-linux-musleabihf
 ```
 Before using this command you may want to create a `crossdev-cow-env-uninit-pre` file containing:
 ```
 #!/bin/bash
-${SCRIPT_DIR}/crossdev-umount ${TARGET} ${UNION_PREFIX_DIR}
+${CD_SCRIPT_DIR}/crossdev-umount "${CD_TARGET}" "${CD_UNION_PREFIX_DIR}"
 ```
