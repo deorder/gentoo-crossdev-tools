@@ -44,7 +44,7 @@ usage: crossdev-emerge ...
 ```
 Example:
 ```
-./crossdev-emerge armv7a-rpi2hs-linux-musleabihf --cd-target armv7a-rpi2hs-linux-musleabihf --oneshot portage 
+./crossdev-emerge --cd-target armv7a-rpi2hs-linux-musleabihf --oneshot portage 
 ```
 
 ### crossdev-emerge-upgrade-system
