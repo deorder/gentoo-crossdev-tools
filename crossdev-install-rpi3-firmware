@@ -20,12 +20,12 @@ if [ -d "${CD_TARGET_DIR}" ]; then
   
   ebegin "Installing RPi3 firmware in ${CD_TARGET_DIR}"
 
-  if [ ! -d "/tmp/rpi-firmware" ]; then
-    git clone --depth=1 https://github.com/raspberrypi/firmware.git "/tmp/rpi-firmware" || cd_die
+  if [ ! -d "${CD_TMP_DIR}/rpi-firmware" ]; then
+    git clone --depth=1 https://github.com/raspberrypi/firmware.git "${CD_TMP_DIR}/rpi-firmware" || cd_die
   fi
 
   mkdir -p ${CD_TARGET_DIR}/boot
-  cp -rav /tmp/rpi-firmware/boot/* "${CD_TARGET_DIR}/boot/" || cd_die
+  cp -rav ${CD_TMP_DIR}/rpi-firmware/boot/* "${CD_TARGET_DIR}/boot/" || cd_die
   cp -av "${CD_TARGET_DIR}/usr/src/linux/arch/arm64/boot/Image" "${CD_TARGET_DIR}/boot/kernel8.img" || cd_die
   cp -av "${CD_TARGET_DIR}/usr/src/linux/arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb" "${CD_TARGET_DIR}/boot" || cd_die
   cp -av "${CD_TARGET_DIR}/usr/src/linux/arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b-plus.dtb" "${CD_TARGET_DIR}/boot" || cd_die

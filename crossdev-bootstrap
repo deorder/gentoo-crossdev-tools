@@ -50,11 +50,13 @@ if [[ ! -z "${CD_HELP}" ]]; then
   exit 1
 fi
 
+CD_CROSSDEV_EMERGE_ARGS+=("sys-apps/baselayout")
+
+CD_CROSSDEV_EMERGE_ARGS+=("virtual/libc")
 if [[ "${CD_USE_LIBC}" == "musl" ]]; then
   einfo "Using musl";
   CD_CROSSDEV_EMERGE_ARGS+=("sys-libs/musl")
 fi
-
 if [[ "${CD_USE_LIBC}" == "glibc" ]]; then
   if [[ ! -z "${CD_LIBC_VER}" ]]; then
     einfo "Using glibc version: ${CD_LIBC_VER}";
@@ -65,6 +67,7 @@ if [[ "${CD_USE_LIBC}" == "glibc" ]]; then
   CD_CROSSDEV_EMERGE_ARGS+=("=sys-libs/glibc-${CD_LIBC_VER}")
 fi
 
+CD_CROSSDEV_EMERGE_ARGS+=("virtual/os-headers")
 if [[ ! -z "${CD_KERNEL_VER}" ]]; then
   einfo "Using kernel version: ${CD_KERNEL_VER}";
 else

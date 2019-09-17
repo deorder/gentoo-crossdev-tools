@@ -22,6 +22,12 @@ cd_parse_arguments() {
       --cd-target=*)
       CD_TARGET="${1#*=}"
       ;;
+      --cd-tmp-dir)
+      shift; CD_TMP_DIR="${1}"
+      ;;
+      --cd-tmp-dir=*)
+      CD_TMP_DIR="${1#*=}"
+      ;;
       --cd-target-dir)
       shift; CD_TARGET_DIR="${1}"
       ;;
@@ -50,6 +56,10 @@ cd_parse_arguments() {
   fi
 
   if [[ -z "${CD_HELP}" ]]; then
+    if [[ -z "${CD_TMP_DIR}" ]]; then
+      CD_TMP_DIR="/var/tmp"
+      #ewarn "No temp dir specified, using: ${CD_TMP_DIR}"
+    fi
     if [[ -z "${CD_TARGET_DIR}" ]]; then
       CD_TARGET_DIR="/usr/${CD_TARGET}"
       #ewarn "No target dir specified, using: ${CD_TARGET_DIR}"
@@ -69,6 +79,7 @@ cd_print_usage_header() {
   echo "usage: ${CD_SCRIPT_FILE} ..."
   echo "--cd-help (This help)"
   echo "--cd-target \"<target triplet>\" (required)"
+  echo "--cd-tmp-dir \"<temp dir>\" (${CD_TMP_DIR:-"/var/tmp"})"
   echo "--cd-target-dir \"<target dir>\" (${CD_TARGET_DIR:-"/usr/<target>"})"
   echo "--cd-config-dir \"<config dir>\" (${CD_CONFIG_DIR:-"/etc/crossdev"})"
 }

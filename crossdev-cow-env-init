@@ -12,8 +12,8 @@ if [[ ! -z "${CD_HELP}" ]]; then
   exit 1
 fi
 
-CD_COW_PREFIX_DIR=/tmp/cow-${CD_TARGET}
-CD_UNION_PREFIX_DIR=/tmp/union-${CD_TARGET}
+CD_COW_PREFIX_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
+CD_UNION_PREFIX_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
 
 mkdir -p "${CD_COW_PREFIX_DIR}"
 mkdir -p "${CD_UNION_PREFIX_DIR}"
