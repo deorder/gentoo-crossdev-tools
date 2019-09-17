@@ -1,9 +1,8 @@
 #!/bin/bash
 
-CD_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]:-${0}}")
-CD_SCRIPT_FILE=$(basename "${BASH_SOURCE[0]:-${0}}")
+CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+source "${CD_CUR_DIR}/crossdev-functions.sh"
 
 cd_parse_arguments $@
 
@@ -18,7 +17,7 @@ CD_UNION_PREFIX_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
 if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-bashrc" ]; then
   CD_BASH_RC_FILE="${CD_CONFIG_DIR}/crossdev-cow-env-bashrc"
 else
-  CD_BASH_RC_FILE="${CD_SCRIPT_DIR}/crossdev-cow-env-bashrc"
+  CD_BASH_RC_FILE="$(dirname $(readlink -e ${CD_SCRIPT_FILE}))/crossdev-cow-env-bashrc"
 fi
 
 if [[ -f "${CD_CONFIG_DIR}/crossdev-cow-env-enter-pre" ]]; then

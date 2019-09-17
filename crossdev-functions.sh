@@ -92,4 +92,7 @@ cd_die() {
   exit 1
 }
 
+CD_SCRIPT_FILE=$(basename "$(readlink -e "${BASH_SOURCE[1]}")")
+CD_SCRIPT_DIR=$(dirname "$(readlink -e "${BASH_SOURCE[1]}")")
+
 export CD_SCRIPT_DIR CD_SCRIPT_FILE

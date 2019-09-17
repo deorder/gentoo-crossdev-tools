@@ -1,9 +1,8 @@
 #!/bin/bash
 
-CD_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]:-${0}}")
-CD_SCRIPT_FILE=$(basename "${BASH_SOURCE[0]:-${0}}")
+CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-source "${CD_SCRIPT_DIR}/crossdev-functions.sh"
+source "${CD_CUR_DIR}/crossdev-functions.sh"
 
 cd_parse_arguments $@
 
@@ -29,7 +28,7 @@ if [[ -d ${CD_UNION_PREFIX_DIR} ]]; then
     ebegin "Uninitializing environment"
 
     ebegin "Killing all remaining processes"
-    fuser -Mk "${CD_UNION_PREFIX_DIR}" || cd_die
+    fuser -Mk "${CD_UNION_PREFIX_DIR}"
     eend 0
 
     ebegin "Unmounting union"
