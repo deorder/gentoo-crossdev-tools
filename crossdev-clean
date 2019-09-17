@@ -49,7 +49,7 @@ if [[ ! -z "${CD_CONFIRM}" ]]; then
     eend 0
   fi
 
-  if mount | grep -q "${TARGET_DIR}"; then
+  if mount | grep -q "${CD_TARGET_DIR}"; then
     eerror "Mounted filesystems in subdirectories detected, exiting"; exit 0
   fi
 

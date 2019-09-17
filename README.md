@@ -192,5 +192,5 @@ Example:
 Before using this command you may want to create a `crossdev-cow-env-uninit-pre` file containing:
 ```
 #!/bin/bash
-${CD_SCRIPT_DIR}/crossdev-umount "${CD_TARGET}" "${CD_UNION_PREFIX_DIR}"
+${CD_SCRIPT_DIR}/crossdev-umount --cd-target ${CD_TARGET} --cd-target-dir "${CD_UNION_PREFIX_DIR}"
 ```
