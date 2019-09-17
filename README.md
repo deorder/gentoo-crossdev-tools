@@ -20,7 +20,7 @@ cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi
 
 Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
 ```
-./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm
+./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi2
 ./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
 mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
@@ -38,6 +38,7 @@ Usage:
 ```
 usage: crossdev-emerge ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
@@ -53,6 +54,7 @@ Usage:
 ```
 usage: crossdev-emerge ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
@@ -68,6 +70,7 @@ Usage:
 ```
 usage: crossdev-clean ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
@@ -84,6 +87,7 @@ Usage:
 ```
 usage: crossdev-create ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
@@ -102,6 +106,7 @@ Usage:
 ```
 usage: crossdev-install-rpi3-firmware ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
@@ -119,20 +124,23 @@ Usage:
 ```
 usage: crossdev-install-qemu-wrapper ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
+--cd-use-rpi1 (Use RPi1 equivalent CPU for wrapper)
+--cd-use-rpi2 (Use RPi2 equivalent CPU for wrapper)
+--cd-use-rpi3 (Use RPi3 equivalent CPU for wrapper)
+--cd-use-rpi4 (Use RPi4 equivalent CPU for wrapper)
 --cd-qemu-arch (Architecture part of user emulation binary)
 ```
 Example:
 ```
-./crossdev-install-qemu-wrapper --cd-target aarch64-rpi3s-linux-gnueabi --cd-qemu-arch aarch64
+./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2hs-linux-musleabihf --cd-qemu-arch arm --cd-use-rpi2
 ```
 ```
-./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2hs-linux-musleabihf --cd-qemu-arch arm
+./crossdev-install-qemu-wrapper --cd-target aarch64-rpi3s-linux-gnueabi --cd-qemu-arch aarch64 --cd-use-rpi3
 ```
-
-**Note:** If there is no wrapper for your target just copy an existing C file in `crossdev-qemu-wrapper`, then modify and rename it as needed
 
 ### crossdev-cow-env-init
 
@@ -142,6 +150,7 @@ Usage:
 ```
 usage: crossdev-cow-env-init ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
@@ -164,6 +173,7 @@ Usage:
 ```
 usage: crossdev-cow-env-init ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)
@@ -181,6 +191,7 @@ Usage:
 ```
 usage: crossdev-cow-env-uninit ...
 --cd-help (This help)
+--cd-tmp-dir "<temp dir>" (/var/tmp)
 --cd-target "<target triplet>" (required)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-config-dir "<config dir>" (/etc/crossdev)

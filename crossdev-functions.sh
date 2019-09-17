@@ -78,8 +78,8 @@ cd_parse_arguments() {
 cd_print_usage_header() {
   echo "usage: ${CD_SCRIPT_FILE} ..."
   echo "--cd-help (This help)"
-  echo "--cd-target \"<target triplet>\" (required)"
   echo "--cd-tmp-dir \"<temp dir>\" (${CD_TMP_DIR:-"/var/tmp"})"
+  echo "--cd-target \"<target triplet>\" (required)"
   echo "--cd-target-dir \"<target dir>\" (${CD_TARGET_DIR:-"/usr/<target>"})"
   echo "--cd-config-dir \"<config dir>\" (${CD_CONFIG_DIR:-"/etc/crossdev"})"
 }
