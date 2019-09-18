@@ -6,42 +6,49 @@ source "${CD_CUR_DIR}/crossdev-functions.sh"
 
 cd_parse_arguments $@
 
-if [[ ! -z "${CD_HELP}" ]]; then
+if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   exit 1
 fi
 
-CD_COW_PREFIX_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
-CD_UNION_PREFIX_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
+export CD_COW_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
+export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
 
-mkdir -p "${CD_COW_PREFIX_DIR}"
-mkdir -p "${CD_UNION_PREFIX_DIR}"
+export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
+export CD_WRAPPER_PREFIX_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}/usr
+export CD_WRAPPER_INSTALL_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}/usr
 
-if [[ -d ${CD_UNION_PREFIX_DIR} ]]; then
-  if cd_is_mount ${CD_UNION_PREFIX_DIR}; then
-    if [[ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" ]]; then
+if [ -d ${CD_UNION_DIR} ]; then
+  if cd_is_mount ${CD_UNION_DIR}; then
+
+    if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" ]; then
       ebegin "Executing crossdev cow env uninit pre hook"
       source "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" || cd_die
       eend 0
     fi
 
-    ebegin "Uninitializing environment"
+    ebegin "Uninitializing cow environment"
 
     ebegin "Killing all remaining processes"
-    fuser -Mk "${CD_UNION_PREFIX_DIR}"
+    fuser -Mk "${CD_UNION_DIR}"
     eend 0
 
-    ebegin "Unmounting union"
-    umount "${CD_UNION_PREFIX_DIR}" || cd_die
+    ebegin "Unmounting unionfs"
+    umount "${CD_UNION_DIR}" || cd_die
     eend 0
 
     eend 0
 
-    if [[ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-post" ]]; then
+    if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-post" ]; then
       ebegin "Executing crossdev cow env uninit post hook"
       source "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-post" || cd_die
       eend 0
     fi
+
+  else
+    eerror "Cow environment not mounted, cannot uninitialize"
   fi
+else
+  eerror "Not a directory, cannot uninitialize"
 fi
 

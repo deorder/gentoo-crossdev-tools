@@ -4,11 +4,6 @@ CD_ARGS=()
 
 source /etc/init.d/functions.sh
 
-cd_is_mount() {
-  local path=$(readlink -f $1)
-  grep -q "$path" /proc/mounts
-}
-
 cd_parse_arguments() {
 
   while (( ${#1} )); do
@@ -63,28 +58,27 @@ cd_parse_arguments() {
     shift
   done
 
-  if [[ -z "${CD_TARGET}" ]]; then
+  if [ -z "${CD_TARGET}" ]; then
     eerror "No target specified, use --cd-target"
     CD_HELP=1
   fi
 
-  if [[ -z "${CD_HELP}" ]]; then
-    if [[ -z "${CD_PREFIX_DIR}" ]]; then
+  if [ -z "${CD_HELP}" ]; then
+    if [ -z "${CD_PREFIX_DIR}" ]; then
       CD_PREFIX_DIR=""
       #ewarn "No temp dir specified, using: ${CD_PREFIX_DIR}"
     fi
-    if [[ -z "${CD_TMP_DIR}" ]]; then
-      CD_TMP_DIR="$(portageq envvar PORTAGE_TMPDIR)"
-      #ewarn "No temp dir specified, using: ${CD_TMP_DIR}"
+    if [ -z "${CD_CONFIG_DIR}" ]; then
+      CD_CONFIG_DIR="${CD_PREFIX_DIR}/etc/crossdev"
+      #ewarn "No config dir specified, using: ${CD_CONFIG_DIR}"
     fi
-    if [[ -z "${CD_TARGET_DIR}" ]]; then
+    if [ -z "${CD_TARGET_DIR}" ]; then
       CD_TARGET_DIR="${CD_PREFIX_DIR}/usr/${CD_TARGET}"
       #ewarn "No target dir specified, using: ${CD_TARGET_DIR}"
     fi
-
-    if [[ -z "${CD_CONFIG_DIR}" ]]; then
-      CD_CONFIG_DIR="${CD_PREFIX_DIR}/etc/crossdev"
-      #ewarn "No config dir specified, using: ${CD_CONFIG_DIR}"
+    if [ -z "${CD_TMP_DIR}" ]; then
+      CD_TMP_DIR="$(portageq envvar PORTAGE_TMPDIR)"
+      #ewarn "No temp dir specified, using: ${CD_TMP_DIR}"
     fi
   fi
 
@@ -95,29 +89,42 @@ cd_parse_arguments() {
 cd_print_usage_header() {
   echo "usage: ${CD_SCRIPT_FILE} ..."
   echo "--cd-help (This help)"
-  echo "--cd-target \"<target triplet>\" (required)"
-  echo "--cd-prefix-dir \"<prefix dir>\" (${CD_CONFIG_DIR:-"empty"})"
-  echo "--cd-config-dir \"<config dir>\" (${CD_CONFIG_DIR:-"${CD_PREFIX_DIR}/etc/crossdev"})"
-  echo "--cd-target-dir \"<target dir>\" (${CD_TARGET_DIR:-"${CD_PREFIX_DIR}/usr/<target>"})"
-  echo "--cd-tmp-dir \"<temp dir>\" (${CD_TMP_DIR:-"$(portageq envvar PORTAGE_TMPDIR)"})"
+  echo "--cd-target \"<target triplet>\" (Target triplet) (${CD_TARGET-"required"})"
+  echo "--cd-prefix-dir \"<prefix dir>\" (Prefix dir) (${CD_PREFIX_DIR:-"<empty>"})"
+  echo "--cd-config-dir \"<config dir>\" (Config dir) (${CD_CONFIG_DIR:-"${CD_PREFIX_DIR}/etc/crossdev"})"
+  echo "--cd-target-dir \"<target dir>\" (Target dir) (${CD_TARGET_DIR:-"${CD_PREFIX_DIR}/usr/<target>"})"
+  echo "--cd-tmp-dir \"<temp dir>\" (Temp dir) (${CD_TMP_DIR:-"$(portageq envvar PORTAGE_TMPDIR)"})"
 }
     
+cd_get_package_version_by_atom() {
+  local root=${1} format=${2} atom=${3}
+  qatom --root "${root:-/}" -F "${format}" $(qlist --root "${root:-/}" -Ive "${atom}" 2> /dev/null) 2> /dev/null
+}
+
 cd_get_package_version_by_path() {
   local root=${1} format=${2}
   local path=$(cd_resolve_symlink "${root}" "${3}")
-  local version=$(qatom --root "${root:-/}" -F "${format}" $(qfile --root "${root:-/}" -v "${path}" | cut -d' ' -f1) 2> /dev/null)
-  echo "${version}"
+  qatom --root "${root:-/}" -F "${format}" $(qfile --root "${root:-/}" -v "${path}" 2> /dev/null | cut -d' ' -f1) 2> /dev/null
 }
 
-cd_get_package_version_by_atom() {
-  local root=${1} format=${2} atom=${3}
-  local version=$(qatom --root "${root:-/}" -F "${format}" $(qlist --root "${root:-/}" -Ive "${atom}" 2> /dev/null) 2> /dev/null)
-  echo "${version}"
+cd_portageq() {
+  local root=${1}; shift
+  ROOT="${root}" PORTAGE_CONFIGROOT="${root}" portageq "${@}" 2> /dev/null
+}
+
+cd_die() {
+  local exit_code=$?
+  if [ ! -z "${1}" ]; then
+    eerror "${BASH_SOURCE[1]}@${BASH_LINENO[0]}: ${1}"
+  else
+    eend ${exit_code}
+  fi
+  exit 1
 }
 
 cd_resolve_symlink() {
   local result=''
-  local root=${1} path=${2}
+  local root=${1%/} path=${2}
   path="${root}/${path}"
   while [[ -L "${path}" ]]; do
     local target="$(readlink "${path}")"
@@ -126,7 +133,7 @@ cd_resolve_symlink() {
       *) path="$(dirname "${path}")/${target}" ;;
     esac
   done; 
-  if [[ -e "${path}" ]]; then
+  if [ -e "${path}" ]; then
     result="$(realpath "${path}")"
   else
     result="${path}"
@@ -134,14 +141,9 @@ cd_resolve_symlink() {
   echo ${result#"${root}"}
 }
 
-cd_die() {
-  local exit_code=$?
-  if [[ ! -z "${1}" ]]; then
-    eerror "${BASH_SOURCE[1]}@${BASH_LINENO[0]}: ${1}"
-  else
-    eend ${exit_code}
-  fi
-  exit 1
+cd_is_mount() {
+  local path=$(readlink -f ${1} 2> /dev/null)
+  mountpoint -q "${path}"
 }
 
 CD_SCRIPT_FILE=$(basename "$(readlink -e "${BASH_SOURCE[1]}")")

@@ -6,7 +6,7 @@ source "${CD_CUR_DIR}/crossdev-functions.sh"
 
 cd_parse_arguments $@
 
-if [[ ! -z "${CD_HELP}" ]]; then
+if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   exit 1
 fi

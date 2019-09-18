@@ -29,12 +29,12 @@ cd_parse_extra_arguments() {
 
 cd_parse_extra_arguments "${CD_ARGS[@]}"
 
-if [[ ! -z "${CD_HELP}" ]]; then
+if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   exit 1
 fi
 
-if [[ -f "${CD_CONFIG_DIR}/crossdev-eselect-pre" ]]; then
+if [ -f "${CD_CONFIG_DIR}/crossdev-eselect-pre" ]; then
   ebegin "Executing crossdev eselect pre hook"
   source "${CD_CONFIG_DIR}/crossdev-eselect-pre" || cd_die
   eend 0
@@ -44,7 +44,7 @@ ebegin "Starting real eselect with: ${CD_ESELECT_ARGS[*]}"
 ROOT="${CD_TARGET_DIR}/" PORTAGE_CONFIGROOT="${CD_TARGET_DIR}/" eselect "${CD_ESELECT_ARGS[@]}" || cd_die
 eend 0
 
-if [[ -f "${CD_CONFIG_DIR}/crossdev-eselect-post" ]]; then
+if [ -f "${CD_CONFIG_DIR}/crossdev-eselect-post" ]; then
   ebegin "Executing crossdev eselect post hook"
   source "${CD_CONFIG_DIR}/crossdev-eselect-post" || cd_die
   eend 0

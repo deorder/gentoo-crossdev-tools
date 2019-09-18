@@ -6,7 +6,7 @@ source "${CD_CUR_DIR}/crossdev-functions.sh"
 
 cd_parse_arguments $@
 
-if [[ ! -z "${CD_HELP}" ]]; then
+if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   exit 1
 fi
@@ -14,6 +14,5 @@ fi
 CD_ARGS+=("--ask" "--tree" "--with-bdeps=y" "--complete-graph=y" "--binpkg-respect-use=y" "--backtrack=300" "--verbose-conflicts" "--update" "--newuse" "--deep" "@system")
 
 ebegin "Starting crossdev emerge with: ${CD_ARGS[*]}"
-export CD_TARGET CD_TARGET_DIR CD_CONFIG_DIR
-${CD_SCRIPT_DIR}/crossdev-emerge "${CD_ARGS[@]}" || cd_die
+source "${CD_SCRIPT_DIR}/crossdev-emerge" "${CD_ARGS[@]}" || cd_die
 eend 0

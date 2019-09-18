@@ -71,7 +71,7 @@ cd_parse_extra_arguments() {
 
 cd_parse_extra_arguments "${CD_ARGS[@]}"
 
-if [[ ! -z "${CD_HELP}" ]]; then
+if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   echo "--cd-use-rpi (Use RPi supported kernel)"
   echo "--cd-use-musl (Use musl as the libc)"
@@ -85,34 +85,34 @@ if [[ ! -z "${CD_HELP}" ]]; then
   exit 1
 fi
 
-if [[ "${CD_USE_VER}" == "host" ]]; then
+if [ "${CD_USE_VER}" == "host" ]; then
   CD_GET_PACKAGE_DIR="${CD_PREFIX_DIR}"
   einfo "Basing on host package versions"
 fi
 
-if [[ "${CD_USE_VER}" == "target" ]]; then
+if [ "${CD_USE_VER}" == "target" ]; then
   CD_GET_PACKAGE_DIR="${CD_TARGET_DIR}"
   einfo "Basing on target package versions"
 fi
 
-if [[ -z "${CD_USE_LIBC}" ]]; then
+if [ -z "${CD_USE_LIBC}" ]; then
   CD_HAS_MUSL=$(cd_get_package_version_by_atom "${CD_GET_PACKAGE_DIR}" "%{PVR}" "sys-libs/musl")
-  if [[ ! -z "${CD_HAS_MUSL}" ]]; then
+  if [ ! -z "${CD_HAS_MUSL}" ]; then
     CD_USE_LIBC="musl"
   fi
   CD_HAS_GLIBC=$(cd_get_package_version_by_atom "${CD_GET_PACKAGE_DIR}" "%{PVR}" "sys-libs/glibc")
-  if [[ ! -z "${CD_HAS_GLIBC}" ]]; then
+  if [ ! -z "${CD_HAS_GLIBC}" ]; then
     CD_USE_LIBC="glibc"
   fi
 fi
 
-if [[ "${CD_USE_LIBC}" == "musl" ]]; then
-  if [[ ! -z "${CD_LIBC_VER}" ]]; then
+if [ "${CD_USE_LIBC}" == "musl" ]; then
+  if [ ! -z "${CD_LIBC_VER}" ]; then
     einfo "Using musl version: ${CD_LIBC_VER}";
     CD_CROSSDEV_ARGS+=("--libc" "${CD_LIBC_VER}")
   else
     CD_LIBC_VER=$(cd_get_package_version_by_atom "${CD_GET_PACKAGE_DIR}" "%{PVR}" "sys-libs/musl")
-    if [[ ! -z "${CD_LIBC_VER}" ]]; then
+    if [ ! -z "${CD_LIBC_VER}" ]; then
       einfo "No musl version specified, using: ${CD_LIBC_VER}";
       CD_CROSSDEV_ARGS+=("--libc" "${CD_LIBC_VER}")
     else
@@ -120,13 +120,13 @@ if [[ "${CD_USE_LIBC}" == "musl" ]]; then
     fi
   fi
 fi
-if [[ "${CD_USE_LIBC}" == "glibc" ]]; then
-  if [[ ! -z "${CD_LIBC_VER}" ]]; then
+if [ "${CD_USE_LIBC}" == "glibc" ]; then
+  if [ ! -z "${CD_LIBC_VER}" ]; then
     einfo "Using glibc version: ${CD_LIBC_VER}";
     CD_CROSSDEV_ARGS+=("--libc" "${CD_LIBC_VER}")
   else
     CD_LIBC_VER=$(cd_get_package_version_by_atom "${CD_GET_PACKAGE_DIR}" "%{PVR}" "sys-libs/glibc")
-    if [[ ! -z "${CD_LIBC_VER}" ]]; then
+    if [ ! -z "${CD_LIBC_VER}" ]; then
       einfo "No glibc version specified, using: ${CD_LIBC_VER}";
       CD_CROSSDEV_ARGS+=("--libc" "${CD_LIBC_VER}")
     else
@@ -135,17 +135,17 @@ if [[ "${CD_USE_LIBC}" == "glibc" ]]; then
   fi
 fi
 
-if [[ ! -z "${CD_KERNEL_VER}" ]]; then
+if [ ! -z "${CD_KERNEL_VER}" ]; then
   einfo "Using kernel version: ${CD_KERNEL_VER}";
   CD_CROSSDEV_ARGS+=("--kernel" "${CD_KERNEL_VER}")
 else
-  if [[ ! -z "${CD_USE_RPI}" ]]; then
+  if [ ! -z "${CD_USE_RPI}" ]; then
     CD_KERNEL_VER="4.19"
     einfo "Using rpi kernel version: ${CD_KERNEL_VER}";
     CD_CROSSDEV_ARGS+=("--kernel" "${CD_KERNEL_VER}")
   else
     CD_KERNEL_VER=$(cd_get_package_version_by_atom "${CD_GET_PACKAGE_DIR}" "%{PVR}" "sys-kernel/linux-headers")
-    if [[ ! -z "${CD_KERNEL_VER}" ]]; then
+    if [ ! -z "${CD_KERNEL_VER}" ]; then
       einfo "No kernel version specified, using: ${CD_KERNEL_VER}";
       CD_CROSSDEV_ARGS+=("--kernel" "${CD_KERNEL_VER}")
     else
@@ -154,12 +154,12 @@ else
   fi
 fi
 
-if [[ ! -z "${CD_GCC_VER}" ]]; then
+if [ ! -z "${CD_GCC_VER}" ]; then
   einfo "Using gcc version: ${CD_GCC_VER}";
   CD_CROSSDEV_ARGS+=("--gcc" "${CD_GCC_VER}")
 else
   CD_GCC_VER=$(cd_get_package_version_by_path "${CD_GET_PACKAGE_DIR}" "%{PVR}" "/usr/bin/gcc")
-  if [[ ! -z "${CD_GCC_VER}" ]]; then
+  if [ ! -z "${CD_GCC_VER}" ]; then
     einfo "No gcc version specified, using: ${CD_GCC_VER}";
     CD_CROSSDEV_ARGS+=("--gcc" "${CD_GCC_VER}")
   else
@@ -167,12 +167,12 @@ else
   fi
 fi
 
-if [[ ! -z "${CD_BINUTILS_VER}" ]]; then
+if [ ! -z "${CD_BINUTILS_VER}" ]; then
   einfo "Using binutils version: ${CD_BINUTILS_VER}";
   CD_CROSSDEV_ARGS+=("--binutils" "${CD_BINUTILS_VER}")
 else
   CD_BINUTILS_VER=$(cd_get_package_version_by_path "${CD_GET_PACKAGE_DIR}" "%{PVR}" "/usr/bin/ld")
-  if [[ ! -z "${CD_BINUTILS_VER}" ]]; then
+  if [ ! -z "${CD_BINUTILS_VER}" ]; then
     einfo "No binutils version specified, using: ${CD_BINUTILS_VER}";
     CD_CROSSDEV_ARGS+=("--binutils" "${CD_BINUTILS_VER}")
   else

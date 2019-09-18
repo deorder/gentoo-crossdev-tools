@@ -49,7 +49,7 @@ cd_parse_extra_arguments() {
     shift
   done
 
-  if [[ ! -z "${CD_QEMU_ARCH}" ]]; then
+  if [ ! -z "${CD_QEMU_ARCH}" ]; then
     einfo "Using qemu arch: ${CD_QEMU_ARCH}";
   else
     eerror "No qemu arch specified, use --cd-qemu-arch";
@@ -60,13 +60,13 @@ cd_parse_extra_arguments() {
 
 cd_parse_extra_arguments "${CD_ARGS[@]}"
 
-if [[ ! -z "${CD_HELP}" ]]; then
+if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   echo "--cd-use-rpi1 (Use RPi1 equivalent CPU for wrapper)"
   echo "--cd-use-rpi2 (Use RPi2 equivalent CPU for wrapper)"
   echo "--cd-use-rpi3 (Use RPi3 equivalent CPU for wrapper)"
   echo "--cd-use-rpi4 (Use RPi4 equivalent CPU for wrapper)"
-  echo "--cd-qemu-arch (Architecture part of user emulation binary)"
+  echo "--cd-qemu-arch <arch> (Architecture part of user emulation binary)"
   exit 1
 fi
 

@@ -29,187 +29,35 @@ cd_parse_extra_arguments() {
 
 cd_parse_extra_arguments "${CD_ARGS[@]}"
 
-if [[ ! -z "${CD_HELP}" ]]; then
+if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   exit 1
 fi
 
-CD_PYTHON_PREFIX_DIR=/usr
+export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-${CD_TARGET}
+export CD_WRAPPER_PREFIX_DIR=${CD_TMP_DIR}/wrapper-${CD_TARGET}
+export CD_WRAPPER_INSTALL_DIR=${CD_TMP_DIR}/wrapper-${CD_TARGET}
 
-CD_TARGET_PYTHON_PREFIX_DIR=usr
-CD_TARGET_PKGCONFIG_PREFIX_DIR=usr
-
-CD_CROSS_PREFIX_DIR=${CD_TMP_DIR}/wrapper-${CD_TARGET}
-CD_CROSS_INSTALL_DIR=${CD_TMP_DIR}/wrapper-${CD_TARGET}
-
-mkdir -p "${CD_CROSS_INSTALL_DIR}"
-mkdir -p "${CD_CROSS_INSTALL_DIR}/bin"
-mkdir -p "${CD_CROSS_INSTALL_DIR}/bin/real"
-mkdir -p "${CD_CROSS_INSTALL_DIR}/lib"
-mkdir -p "${CD_CROSS_INSTALL_DIR}/lib/pkgconfig"
-mkdir -p "${CD_CROSS_INSTALL_DIR}/lib64"
-mkdir -p "${CD_CROSS_INSTALL_DIR}/lib64/pkgconfig"
-
-for CD_TOOL in cc gcc cpp g++ c++; do
-
-if [[ -f "/usr/bin/${CD_TARGET}-${CD_TOOL}" ]]; then
-ebegin "Generating wrapper for ${CD_TOOL}"
-
-cat << EOF > "${CD_CROSS_INSTALL_DIR}/bin/${CD_TARGET}-${CD_TOOL}"
-#!/bin/bash
-ARGS=("\$@")
-for ((INDEX=0; INDEX<"\${#ARGS[@]}"; ++INDEX)); do
-  FILTER=\${ARGS[INDEX]}
-  FILTER_SRC='-I/usr/include'
-  FILTER_DST='-I${CD_TARGET_DIR}/usr/include'
-  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-  FILTER_SRC='-L/lib'
-  FILTER_DST='-L${CD_TARGET_DIR}/lib'
-  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-  FILTER_SRC='-L/lib64'
-  FILTER_DST='-L${CD_TARGET_DIR}/lib64'
-  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-  FILTER_SRC='-L/usr/lib'
-  FILTER_DST='-L${CD_TARGET_DIR}/usr/lib'
-  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-  FILTER_SRC='-L/usr/lib64'
-  FILTER_DST='-L${CD_TARGET_DIR}/usr/lib64'
-  FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-  ARGS[INDEX]=\${FILTER}
-done
-exec "/usr/bin/${CD_TARGET}-${CD_TOOL}" "\${ARGS[@]}"
-EOF
-
-chmod 755 "${CD_CROSS_INSTALL_DIR}/bin/${CD_TARGET}-${CD_TOOL}" || cd_die
-
-eend 0
-fi
-
-done
-
-CD_PYTHON_VERS=$(find "${CD_PYTHON_PREFIX_DIR}/bin" -regex ".*python[0-9]+.[\.0-9]+[a-z]*$" | sed 's/.*\/python//g' | sort | uniq)
-
-for CD_PYTHON_VER in ${CD_PYTHON_VERS}; do
-ebegin "Generating wrapper for python ${CD_PYTHON_VER}"
-
-CD_PYTHON_MAJ=$(echo $1 | cut -d'.' -f1)
-
-CD_PYTHON_REAL=$(readlink -e `which python${CD_PYTHON_VER}`)
-CD_PYTHON_CONFIG_REAL=$(readlink -e `which python${CD_PYTHON_VER}-config`)
-
-cat << EOF > "${CD_CROSS_INSTALL_DIR}/bin/python${CD_PYTHON_VER}-config"
-#!/bin/sh
-exec "${CD_TARGET_DIR}/usr/bin/python${CD_PYTHON_VER}-config" "\${CD_@}"
-EOF
-
-chmod 750 "${CD_CROSS_INSTALL_DIR}/bin/python${CD_PYTHON_VER}-config"
-ln -fs ./python${CD_PYTHON_VER}-config "${CD_CROSS_INSTALL_DIR}/bin/python-config"
-ln -fs ./python${CD_PYTHON_VER}-config "${CD_CROSS_INSTALL_DIR}/bin/python${CD_PYTHON_MAJ}-config"
-cp -a ${CD_PYTHON_CONFIG_REAL} "${CD_CROSS_INSTALL_DIR}/bin/real/python${CD_PYTHON_VER}-config"
-
-for CD_LIB_DIR in lib lib64; do
-
-cat << EOF > "${CD_CROSS_INSTALL_DIR}/${CD_LIB_DIR}/sitecustomize.py"
-import os
-import sys
-import site
-import distutils.sysconfig
-
-abiflags = ''
-if hasattr(sys, 'abiflags'):
-  abiflags = sys.abiflags
-
-python_name = 'python' + distutils.sysconfig.get_python_version()
-python_name_abi = 'python' + distutils.sysconfig.get_python_version() + abiflags
-
-sys.path, sys_path = sys.path[:1], sys.path[1:]
-site.addsitedir(os.path.join('${CD_TARGET_DIR}', '${CD_TARGET_PYTHON_PREFIX_DIR}', '${CD_LIB_DIR}', python_name, 'site-packages'))
-sys.path.extend(sys_path)
-
-sys.path, sys_path = sys.path[:1], sys.path[1:]
-site.addsitedir(os.path.join('${CD_CROSS_PREFIX_DIR}', '${CD_LIB_DIR}', python_name))
-sys.path.extend(sys_path)
-
-#if '_sysconfigdata' in sys.modules:
-#  del sys.modules['_sysconfigdata']
-#import _sysconfigdata
-
-#for key in ['LIBP', 'LIBPL', 'LIBDIR', 'INCLUDEPY', 'INCLUDEDIR', 'CONFINCLUDEPY', 'CONFINCLUDEDIR']:
-#    if key in _sysconfigdata.build_time_vars and not '${CD_TARGET_DIR}' in _sysconfigdata.build_time_vars[key]:
-#        _sysconfigdata.build_time_vars[key] = '${CD_TARGET_DIR}' + _sysconfigdata.build_time_vars[key]
-
-#for key in _sysconfigdata.build_time_vars:
-#  print(key, _sysconfigdata.build_time_vars[key])
-
-if 'distutils.sysconfig' in sys.modules:
-  del sys.modules['distutils.sysconfig']
-import distutils.sysconfig
-
-if 'sysconfig' in sys.modules:
-  del sys.modules['sysconfig']
-import sysconfig
-
-#def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
-#    if prefix:
-#      libpython = os.path.join(prefix, '${CD_LIB_DIR}', python_name)
-#    else:
-#      libpython = os.path.join('${CD_TARGET_DIR}', '${CD_TARGET_PYTHON_PREFIX_DIR}', '${CD_LIB_DIR}', python_name)
-#    if standard_lib:
-#      return libpython
-#    else:
-#      return os.path.join(libpython, 'site-packages')
-
-def get_python_inc(plat_specific=0, prefix=None):
-  if prefix:
-    return os.path.join(prefix, "include", python_name_abi)
-  else:
-    return os.path.join('${CD_TARGET_DIR}', '${CD_TARGET_PYTHON_PREFIX_DIR}', 'include', python_name_abi)
-
-#distutils.sysconfig.get_python_lib = get_python_lib
-distutils.sysconfig.get_python_inc = get_python_inc
-
-sys.base_exec_prefix = '${CD_PYTHON_PREFIX_DIR}'
-sys.base_prefix = '${CD_PYTHON_PREFIX_DIR}'
-sys.exec_prefix = '${CD_PYTHON_PREFIX_DIR}'
-sys.prefix = '${CD_PYTHON_PREFIX_DIR}'
-EOF
-
-mkdir -p "${CD_CROSS_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}" || cd_die
-
-ln -fs "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_CROSS_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python.pc" || cd_die
-ln -fs "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_CROSS_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_MAJ}.pc" || cd_die
-ln -fs "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_CROSS_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" || cd_die
-
-ln -fs "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" "${CD_CROSS_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" || cd_die
-
-if [[ -d "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" ]]; then
-  if [[ ! -z "$(find "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" -name "_sysconfigdata*.py" | head -n 1)" ]]; then
-    ln -fs "$(find "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" -name "_sysconfigdata*.py" | head -n 1)" "${CD_CROSS_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/_sysconfigdata.py" || cd_die
-  fi
-fi
-
-done
-
-eend 0
-done
-
-export PYTHONPATH="${CD_CROSS_PREFIX_DIR}/lib"
-export PREROOTPATH="${CD_CROSS_PREFIX_DIR}/bin"
-export PATH="${CD_CROSS_PREFIX_DIR}/bin:${PATH}"
-export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
-
-export CC="${CD_CROSS_PREFIX_DIR}/bin/${CD_TARGET}-gcc"
-export CXX="${CD_CROSS_PREFIX_DIR}/bin/${CD_TARGET}-g++"
-export CPP="${CD_CROSS_PREFIX_DIR}/bin/${CD_TARGET}-cpp"
-
-if [[ -f "${CD_CONFIG_DIR}/crossdev-emerge-pre" ]]; then
+if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-pre" ]; then
   ebegin "Executing crossdev emerge pre hook"
   source "${CD_CONFIG_DIR}/crossdev-emerge-pre" || cd_die
   eend 0
 fi
 
+ebegin "Creating wrapper environment"
+source "${CD_SCRIPT_DIR}/crossdev-wrapper-env-create" "${CD_ARGS[@]}" || cd_die
+eend 0
+
 ebegin "Starting real emerge with: ${CD_EMERGE_ARGS[*]}"
-export CD_TARGET CD_TARGET_DIR CD_CONFIG_DIR CD_SCRIPT_DIR
+export PYTHONPATH="${CD_WRAPPER_PREFIX_DIR}/lib"
+export PREROOTPATH="${CD_WRAPPER_PREFIX_DIR}/bin"
+export PATH="${CD_WRAPPER_PREFIX_DIR}/bin:${PATH}"
+export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
+
+export CC="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-gcc"
+export CXX="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-g++"
+export CPP="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-cpp"
+
 if [ ! -z "${CD_COWHOME}" ]; then
   FEATURES="-sandbox -usersandbox -userpriv" ROOT="${CD_TARGET_DIR}/" PORTAGE_CONFIGROOT="${CD_TARGET_DIR}/" ${CD_TARGET}-emerge --config-root="${CD_TARGET_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
 else
@@ -217,7 +65,7 @@ else
 fi
 eend 0
 
-if [[ -f "${CD_CONFIG_DIR}/crossdev-emerge-post" ]]; then
+if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-post" ]; then
   ebegin "Executing crossdev emerge post hook"
   source "${CD_CONFIG_DIR}/crossdev-emerge-post" || cd_die
   eend 0
