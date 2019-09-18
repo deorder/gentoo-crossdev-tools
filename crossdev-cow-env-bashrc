@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cd "${CD_START_DIR}"
-
 . /etc/profile
 
 export PS1="\[\033[01;33m\][${CD_TARGET}] ${PS1}"
