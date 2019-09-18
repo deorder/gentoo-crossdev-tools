@@ -30,9 +30,9 @@ fi
 
 if cd_is_mount "${CD_UNION_DIR}"; then
   if (( ${#CD_ARGS[@]} )); then
-    chroot "${CD_UNION_DIR}" /usr/bin/env -C "${PWD}" "${CD_ARGS[@]}" || cd_die
+    chroot "${CD_UNION_DIR}" /usr/bin/env -C "${PWD}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 "${CD_ARGS[@]}" || cd_die
   else
-    chroot "${CD_UNION_DIR}" /usr/bin/env -C "${PWD}" /bin/bash --rcfile "${CD_BASH_RC_FILE}" || cd_die
+    chroot "${CD_UNION_DIR}" /usr/bin/env -C "${PWD}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 CD_COW_ENV_CHROOT_ENTER=1 /bin/bash --rcfile "${CD_BASH_RC_FILE}" || cd_die
   fi
   eend 0
 else
