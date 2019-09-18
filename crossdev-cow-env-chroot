@@ -29,12 +29,22 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-chroot-pre" ]; then
 fi
 
 if cd_is_mount "${CD_UNION_DIR}"; then
+  export PS1="\[\033[01;33m\][${CD_TARGET}] ${PS1}"
+
+  export PYTHONPATH="${CD_WRAPPER_PREFIX_DIR}/lib"
+  export PREROOTPATH="${CD_WRAPPER_PREFIX_DIR}/bin"
+  export PATH="${CD_WRAPPER_PREFIX_DIR}/bin:${PATH}"
+  export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
+
+  export CC="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-gcc"
+  export CXX="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-g++"
+  export CPP="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-cpp"
+
   if (( ${#CD_ARGS[@]} )); then
     chroot "${CD_UNION_DIR}" /usr/bin/env -C "${PWD}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 "${CD_ARGS[@]}" || cd_die
   else
     chroot "${CD_UNION_DIR}" /usr/bin/env -C "${PWD}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 CD_COW_ENV_CHROOT_ENTER=1 /bin/bash --rcfile "${CD_BASH_RC_FILE}" || cd_die
   fi
-  eend 0
 else
   eerror "Union prefix dir ${CD_UNION_DIR} does not exist, cannot chroot"
 fi
