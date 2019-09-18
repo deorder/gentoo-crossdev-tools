@@ -239,13 +239,13 @@ Before using this command you may want to create a `crossdev-cow-env-init-post` 
 ${CD_SCRIPT_DIR}/crossdev-mount --cd-target "${CD_TARGET}" --cd-target-dir "${CD_UNION_PREFIX_DIR}"
 ```
 
-### crossdev-cow-env-enter
+### crossdev-cow-env-chroot
 
 **Note:** This command requires `unionfs-fuse`
 
 Usage:
 ```
-usage: crossdev-cow-env-init ...
+usage: crossdev-cow-env-chroot ...
 --cd-help (This help)
 --cd-target "<target triplet>" (required)
 --cd-prefix-dir "<prefix dir>" (empty)
@@ -255,7 +255,7 @@ usage: crossdev-cow-env-init ...
 ```
 Example:
 ```
-./crossdev-cow-env-enter --cd-target armv7a-rpi2hs-linux-musleabihf
+./crossdev-cow-env-chroot --cd-target armv7a-rpi2hs-linux-musleabihf
 ```
 
 ### crossdev-cow-env-uninit
