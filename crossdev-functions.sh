@@ -77,7 +77,7 @@ cd_parse_arguments() {
       #ewarn "No target dir specified, using: ${CD_TARGET_DIR}"
     fi
     if [ -z "${CD_TMP_DIR}" ]; then
-      CD_TMP_DIR="$(portageq envvar PORTAGE_TMPDIR)"
+      CD_TMP_DIR="${CD_PREFIX_DIR}/var/tmp"
       #ewarn "No temp dir specified, using: ${CD_TMP_DIR}"
     fi
   fi
@@ -93,7 +93,7 @@ cd_print_usage_header() {
   echo "--cd-prefix-dir \"<prefix dir>\" (Prefix dir) (${CD_PREFIX_DIR:-"<empty>"})"
   echo "--cd-config-dir \"<config dir>\" (Config dir) (${CD_CONFIG_DIR:-"${CD_PREFIX_DIR}/etc/crossdev"})"
   echo "--cd-target-dir \"<target dir>\" (Target dir) (${CD_TARGET_DIR:-"${CD_PREFIX_DIR}/usr/<target>"})"
-  echo "--cd-tmp-dir \"<temp dir>\" (Temp dir) (${CD_TMP_DIR:-"$(portageq envvar PORTAGE_TMPDIR)"})"
+  echo "--cd-tmp-dir \"<temp dir>\" (Temp dir) (${CD_TMP_DIR:-"${CD_PREFIX_DIR}/var/tmp"})"
 }
     
 cd_get_package_version_by_atom() {
