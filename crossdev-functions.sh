@@ -5,7 +5,7 @@ CD_ARGS=()
 source /etc/init.d/functions.sh
 
 cd_is_mount() {
-  path=$(readlink -f $1)
+  local path=$(readlink -f $1)
   grep -q "$path" /proc/mounts
 }
 
@@ -101,15 +101,45 @@ cd_print_usage_header() {
   echo "--cd-target-dir \"<target dir>\" (${CD_TARGET_DIR:-"${CD_PREFIX_DIR}/usr/<target>"})"
   echo "--cd-tmp-dir \"<temp dir>\" (${CD_TMP_DIR:-"$(portageq envvar PORTAGE_TMPDIR)"})"
 }
+    
+cd_get_package_version_by_path() {
+  local root=${1} format=${2}
+  local path=$(cd_resolve_symlink "${root}" "${3}")
+  local version=$(qatom --root "${root:-/}" -F "${format}" $(qfile --root "${root:-/}" -v "${path}" | cut -d' ' -f1) 2> /dev/null)
+  echo "${version}"
+}
 
-cd_is_installed() {
-  ! find "${1}/var/db/pkg/${2}" -type d -name "${3}-*" | grep -q "${3}"
+cd_get_package_version_by_atom() {
+  local root=${1} format=${2} atom=${3}
+  local version=$(qatom --root "${root:-/}" -F "${format}" $(qlist --root "${root:-/}" -Ive "${atom}" 2> /dev/null) 2> /dev/null)
+  echo "${version}"
+}
+
+cd_resolve_symlink() {
+  local result=''
+  local root=${1} path=${2}
+  path="${root}/${path}"
+  while [[ -L "${path}" ]]; do
+    local target="$(readlink "${path}")"
+    case "${target}" in
+      /*) path="${root}/${target}" ;;
+      *) path="$(dirname "${path}")/${target}" ;;
+    esac
+  done; 
+  if [[ -e "${path}" ]]; then
+    result="$(realpath "${path}")"
+  else
+    result="${path}"
+  fi
+  echo ${result#"${root}"}
 }
 
 cd_die() {
-  ERROR=$?; eend ${ERROR};
-  if [[ ! -z "${CD_DEBUG}" ]]; then
-    eerror "Error in ${BASH_SOURCE[1]} at ${BASH_LINENO[0]}"
+  local exit_code=$?
+  if [[ ! -z "${1}" ]]; then
+    eerror "${BASH_SOURCE[1]}@${BASH_LINENO[0]}: ${1}"
+  else
+    eend ${exit_code}
   fi
   exit 1
 }
