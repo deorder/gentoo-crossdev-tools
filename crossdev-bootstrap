@@ -259,6 +259,14 @@ ebegin "Starting crossdev emerge with: ${CD_CROSSDEV_EMERGE_ARGS[*]}"
 "${CD_SCRIPT_DIR}/crossdev-emerge" --ask --tree "${CD_CROSSDEV_EMERGE_ARGS[@]}" || cd_die
 eend 0
 
+ebegin "Creating directories that are still missing"
+mkdir -p "${CD_TARGET_DIR}"/{boot,root,home,etc,bin,sbin,lib/firmware,usr/{,local/}{bin,sbin,lib,include,share/{misc,terminfo,zoneinfo,locale,doc,info,man/man{1..8}}},usr/{src,libexec,portage},var/{log,tmp,cache,spool},mnt,tmp,srv,opt}
+ln -sv /run/lock "${CD_TARGET_DIR}/var/lock"
+ln -sv /run "${CD_TARGET_DIR}/var/run"
+chmod 1777 "${CD_TARGET_DIR}"/{tmp,var/tmp}
+chmod 0750 "${CD_TARGET_DIR}"/root
+eend 0
+
 ebegin "Linking lib64 dirs to lib dirs, if possible"
 ln -fs ./lib "${CD_TARGET_DIR}/usr/lib64"
 ln -fs ./lib "${CD_TARGET_DIR}/lib64"
