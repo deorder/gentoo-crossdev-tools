@@ -102,7 +102,7 @@ CD_PYTHON_VERS=$(find "${CD_PYTHON_PREFIX_DIR}/bin" -regex ".*python[0-9]+.[\.0-
 for CD_PYTHON_VER in ${CD_PYTHON_VERS}; do
 ebegin "Generating wrapper for python ${CD_PYTHON_VER}"
 
-CD_PYTHON_MAJ=$(echo $1 | cut -d'.' -f1)
+CD_PYTHON_MAJ=$(echo ${CD_PYTHON_VER} | cut -d'.' -f1)
 
 cat << EOF > "${CD_WRAPPER_INSTALL_DIR}/bin/python${CD_PYTHON_VER}-config"
 #!/bin/sh
