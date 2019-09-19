@@ -15,12 +15,12 @@ Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
 ./crossdev-create --cd-target armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
 ./crossdev-bootstrap --cd-use-rpi --cd-target armv7a-rpi2s-linux-gnueabihf
-./crossdev-emerge-install-system --cd-target armv7a-rpi2s-linux-gnueabihf
+./crossdev-system-install --cd-target armv7a-rpi2s-linux-gnueabihf
 ```
 
 Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
 ```
-./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi2
+./crossdev-qemu-wrapper-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi2
 ./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
 mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
@@ -88,11 +88,11 @@ Example:
 ./crossdev-emerge --cd-target armv7a-rpi2hs-linux-musleabihf --oneshot portage 
 ```
 
-### crossdev-emerge-upgrade-system
+### crossdev-system-upgrade
 
 Usage:
 ```
-usage: crossdev-emerge ...
+usage: crossdev-system-upgrade ...
 --cd-help (This help)
 --cd-target "<target triplet>" (required)
 --cd-prefix-dir "<prefix dir>" (empty)
@@ -102,7 +102,7 @@ usage: crossdev-emerge ...
 ```
 Example:
 ```
-./crossdev-emerge-upgrade-system --cd-target armv7a-rpi2hs-linux-musleabihf --ask --tree
+./crossdev-system-upgrade --cd-target armv7a-rpi2hs-linux-musleabihf --ask --tree
 ```
 
 ### crossdev-clean
@@ -188,13 +188,13 @@ Example:
 ./crossdev-install-rpi3-firmware --cd-target aarch64-rpi3s-linux-gnueabi
 ```
   
-### crossdev-install-qemu-wrapper
+### crossdev-qemu-wrapper-install
 
 **Note:** This command requires `qemu` with `static-user` and the required `qemu_user_targets_` USE flags
 
 Usage:
 ```
-usage: crossdev-install-qemu-wrapper ...
+usage: crossdev-qemu-wrapper-install ...
 --cd-help (This help)
 --cd-target "<target triplet>" (required)
 --cd-prefix-dir "<prefix dir>" (empty)
@@ -209,10 +209,10 @@ usage: crossdev-install-qemu-wrapper ...
 ```
 Example:
 ```
-./crossdev-install-qemu-wrapper --cd-target armv7a-rpi2hs-linux-musleabihf --cd-qemu-arch arm --cd-use-rpi2
+./crossdev-qemu-wrapper-install --cd-target armv7a-rpi2hs-linux-musleabihf --cd-qemu-arch arm --cd-use-rpi2
 ```
 ```
-./crossdev-install-qemu-wrapper --cd-target aarch64-rpi3s-linux-gnueabi --cd-qemu-arch aarch64 --cd-use-rpi3
+./crossdev-qemu-wrapper-install --cd-target aarch64-rpi3s-linux-gnueabi --cd-qemu-arch aarch64 --cd-use-rpi3
 ```
 
 ### crossdev-cow-env-init

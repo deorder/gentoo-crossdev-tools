@@ -256,7 +256,7 @@ fi
 eend 0
 
 ebegin "Starting crossdev emerge with: ${CD_CROSSDEV_EMERGE_ARGS[*]}"
-"${CD_SCRIPT_DIR}/crossdev-emerge" --ask --tree --usepkg-exclude="*" "${CD_CROSSDEV_EMERGE_ARGS[@]}" || cd_die
+"${CD_SCRIPT_DIR}/crossdev-emerge" --ask --tree "${CD_CROSSDEV_EMERGE_ARGS[@]}" || cd_die
 eend 0
 
 ebegin "Linking lib64 dirs to lib dirs, if possible"
