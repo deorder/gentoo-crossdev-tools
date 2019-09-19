@@ -212,7 +212,7 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-bootstrap-pre" ]; then
 fi
 
 ebegin "Writing package.mask to ${CD_TARGET_DIR}/etc/portage"
-mkdir -p "${CD_TARGET_DIR}/etc/portage/package.mask/" || cd_die
+mkdir -pv "${CD_TARGET_DIR}/etc/portage/package.mask/" || cd_die
 
 if [ ! -z "${CD_GCC_VER}" ]; then
 cat << EOF > "${CD_TARGET_DIR}/etc/portage/package.mask/gcc"
@@ -260,16 +260,16 @@ ebegin "Starting crossdev emerge with: ${CD_CROSSDEV_EMERGE_ARGS[*]}"
 eend 0
 
 ebegin "Creating directories that are still missing"
-mkdir -p "${CD_TARGET_DIR}"/{boot,dev,root,home,etc,bin,sbin,dev,sys,proc,srv,opt,tmp,run/lock,lib/firmware,usr/{,local/}{bin,sbin,lib,include,share/{misc,man/man{1..8}}},usr/{src,libexec,portage},var/{log,tmp,cache,spool}} || cd_die
+mkdir -pv "${CD_TARGET_DIR}"/{boot,dev,root,home,etc,bin,sbin,dev,sys,proc,srv,opt,tmp,run/lock,lib/firmware,usr/{,local/}{bin,sbin,lib,include,share/{misc,man/man{1..8}}},usr/{src,libexec,portage},var/{log,tmp,cache,spool}} || cd_die
 chmod 1777 "${CD_TARGET_DIR}"/{tmp,var/tmp} || cd_die
 chmod 0750 "${CD_TARGET_DIR}"/root || cd_die
-ln -fs /run/lock "${CD_TARGET_DIR}/var/lock"
-ln -fs /run "${CD_TARGET_DIR}/var/run"
+ln -fsv /run/lock "${CD_TARGET_DIR}/var/lock"
+ln -fsv /run "${CD_TARGET_DIR}/var/run"
 eend 0
 
 ebegin "Linking lib64 dirs to lib dirs, if possible"
-ln -fs ./lib "${CD_TARGET_DIR}/usr/lib64"
-ln -fs ./lib "${CD_TARGET_DIR}/lib64"
+ln -fsv ./lib "${CD_TARGET_DIR}/usr/lib64"
+ln -fsv ./lib "${CD_TARGET_DIR}/lib64"
 eend 0
 
 if [ -f "${CD_CONFIG_DIR}/crossdev-bootstrap-post" ]; then

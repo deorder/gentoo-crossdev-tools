@@ -30,11 +30,11 @@ if [ -d ${CD_UNION_DIR} ]; then
     ebegin "Uninitializing cow environment"
 
     ebegin "Killing all remaining processes"
-    fuser -Mk "${CD_UNION_DIR}"
+    fuser -Mkv "${CD_UNION_DIR}"
     eend 0
 
     ebegin "Unmounting unionfs"
-    umount "${CD_UNION_DIR}" || cd_die
+    umount -v "${CD_UNION_DIR}" || cd_die
     eend 0
 
     eend 0

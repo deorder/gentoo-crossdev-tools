@@ -14,7 +14,7 @@ fi
 export CD_COW_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
 export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
 
-mkdir -p "${CD_COW_DIR}"; mkdir -p "${CD_UNION_DIR}"
+mkdir -pv "${CD_COW_DIR}"; mkdir -pv "${CD_UNION_DIR}"
 
 export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
 export CD_WRAPPER_PREFIX_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}/usr

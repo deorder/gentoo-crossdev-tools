@@ -14,13 +14,13 @@ Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
 ```
 ./crossdev-create --cd-target armv7a-rpi2s-linux-gnueabihf
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
-./crossdev-bootstrap --cd-use-rpi --cd-target armv7a-rpi2s-linux-gnueabihf
+./crossdev-bootstrap --cd-target armv7a-rpi2s-linux-gnueabihf --cd-use-rpi
 ./crossdev-system-install --cd-target armv7a-rpi2s-linux-gnueabihf
 ```
 
 Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
 ```
-./crossdev-qemu-wrapper-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi2
+./crossdev-qemu-binfmt-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi 2
 ./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
 mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
@@ -73,7 +73,7 @@ fi
 
 Example of installing Raspberry Pi kernel, firmware and overlay files:
 ```
-./crossdev-rpi-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-kernel-arch arm --cd-use-rpi rpi2
+./crossdev-linux-rpi-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-kernel-arch arm --cd-use-rpi 2
 ```
 
 ### crossdev-emerge
@@ -176,11 +176,11 @@ Example:
 ./crossdev-bootstrap --cd-use-rpi --cd-target aarch64-rpi3s-linux-gnueabi
 ```
 
-### crossdev-rpi-install
+### crossdev-linux-rpi-install
 
 Usage:
 ```
-usage: crossdev-rpi-install ...
+usage: crossdev-linux-rpi-install ...
 --cd-help (This help)
 --cd-target "<target triplet>" (Target triplet) (required)
 --cd-prefix-dir "<prefix dir>" (Prefix dir) (<empty>)
@@ -199,34 +199,31 @@ usage: crossdev-rpi-install ...
 ```
 Example:
 ```
-./crossdev-rpi-install --cd-target aarch64-rpi3hs-linux-musleabi --cd-kernel-arch arm64 --cd-use-rpi rpi3
+./crossdev-linux-rpi-install --cd-target aarch64-rpi3hs-linux-musleabi --cd-kernel-arch arm64 --cd-use-rpi 3
 ```
   
-### crossdev-qemu-wrapper-install
+### crossdev-qemu-binfmt-install
 
 **Note:** This command requires `qemu` with `static-user` and the required `qemu_user_targets_` USE flags
 
 Usage:
 ```
-usage: crossdev-qemu-wrapper-install ...
+usage: crossdev-qemu-binfmt-install ...
 --cd-help (This help)
 --cd-target "<target triplet>" (required)
 --cd-prefix-dir "<prefix dir>" (empty)
 --cd-config-dir "<config dir>" (/etc/crossdev)
 --cd-target-dir "<target dir>" (/usr/<target>)
 --cd-tmp-dir "<temp dir>" (/var/tmp)
---cd-use-rpi1 (Use RPi1 equivalent CPU for wrapper)
---cd-use-rpi2 (Use RPi2 equivalent CPU for wrapper)
---cd-use-rpi3 (Use RPi3 equivalent CPU for wrapper)
---cd-use-rpi4 (Use RPi4 equivalent CPU for wrapper)
---cd-qemu-arch (Architecture part of user emulation binary)
+--cd-qemu-arch <arch> (Architecture part of user emulation binary)
+--cd-use-rpi <name> (Use specified RPi equivalent CPU for wrapper)
 ```
 Example:
 ```
-./crossdev-qemu-wrapper-install --cd-target armv7a-rpi2hs-linux-musleabihf --cd-qemu-arch arm --cd-use-rpi2
+./crossdev-qemu-binfmt-install --cd-target armv7a-rpi2hs-linux-musleabihf --cd-qemu-arch arm --cd-use-rpi 2
 ```
 ```
-./crossdev-qemu-wrapper-install --cd-target aarch64-rpi3s-linux-gnueabi --cd-qemu-arch aarch64 --cd-use-rpi3
+./crossdev-qemu-binfmt-install --cd-target aarch64-rpi3s-linux-gnueabi --cd-qemu-arch aarch64 --cd-use-rpi 3
 ```
 
 ### crossdev-cow-env-init

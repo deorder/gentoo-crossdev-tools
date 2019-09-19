@@ -12,27 +12,17 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
+      *-cd-use-rpi=*)
+      CD_USE_RPI="${1#*=}"
+      ;;
+      *-cd-use-rpi)
+      shift; CD_USE_RPI=${1}
+      ;;
       *-cd-qemu-arch=*)
       CD_QEMU_ARCH="${1#*=}"
       ;;
       *-cd-qemu-arch)
       shift; CD_QEMU_ARCH=${1}
-      ;;
-      *-cd-use-rpi1)
-      CD_QEMU_ARGS+=("-cpu")
-      CD_QEMU_ARGS+=("arm1176")
-      ;;
-      *-cd-use-rpi2)
-      CD_QEMU_ARGS+=("-cpu")
-      CD_QEMU_ARGS+=("cortex-a7")
-      ;;
-      *-cd-use-rpi3)
-      CD_QEMU_ARGS+=("-cpu")
-      CD_QEMU_ARGS+=("cortex-a53")
-      ;;
-      *-cd-use-rpi4)
-      CD_QEMU_ARGS+=("-cpu")
-      CD_QEMU_ARGS+=("cortex-a72")
       ;;
       --)
       shift;
@@ -62,13 +52,33 @@ cd_parse_extra_arguments "${CD_ARGS[@]}"
 
 if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
-  echo "--cd-use-rpi1 (Use RPi1 equivalent CPU for wrapper)"
-  echo "--cd-use-rpi2 (Use RPi2 equivalent CPU for wrapper)"
-  echo "--cd-use-rpi3 (Use RPi3 equivalent CPU for wrapper)"
-  echo "--cd-use-rpi4 (Use RPi4 equivalent CPU for wrapper)"
   echo "--cd-qemu-arch <arch> (Architecture part of user emulation binary)"
+  echo "--cd-use-rpi <name> (Use specified RPi equivalent CPU for wrapper)"
   exit 1
 fi
+
+case ${CD_USE_RPI} in
+  *0*)
+  CD_QEMU_ARGS+=("-cpu")
+  CD_QEMU_ARGS+=("arm1176")
+  ;;
+  *1*)
+  CD_QEMU_ARGS+=("-cpu")
+  CD_QEMU_ARGS+=("arm1176")
+  ;;
+  *2*)
+  CD_QEMU_ARGS+=("-cpu")
+  CD_QEMU_ARGS+=("cortex-a7")
+  ;;
+  *3*)
+  CD_QEMU_ARGS+=("-cpu")
+  CD_QEMU_ARGS+=("cortex-a53")
+  ;;
+  *4*)
+  CD_QEMU_ARGS+=("-cpu")
+  CD_QEMU_ARGS+=("cortex-a72")
+  ;;
+esac
 
 # Source: https://github.com/qemu/qemu/blob/master/scripts/qemu-binfmt-conf.sh
 
@@ -196,10 +206,11 @@ EOF
       ebegin "Installing qemu user emulation in ${CD_TARGET_DIR} for ${CD_QEMU_ARCH} using a custom wrapper"
     fi
 
-    cp -a "/usr/bin/qemu-${CD_QEMU_ARCH}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}-real" || cd_die
+    cp -av "/usr/bin/qemu-${CD_QEMU_ARCH}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}-real" || cd_die
+    echo gcc -static \"${CD_QEMU_WRAPPER_SRC_FILE}\" -O3 -s -o \"${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}\"
     gcc -static "${CD_QEMU_WRAPPER_SRC_FILE}" -O3 -s -o "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" || cd_die
-    cp -a "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
-    chmod 755 "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
+    cp -av "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
+    chmod -v 755 "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
     eend 0
 
     ebegin "Register qemu user emulation binfmt /usr/bin/qemu-${CD_QEMU_ARCH} for ${CD_QEMU_ARCH}"
