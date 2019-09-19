@@ -29,18 +29,7 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-chroot-pre" ]; then
 fi
 
 if cd_is_mount "${CD_UNION_DIR}"; then
-  export ROOT="${CD_TARGET_DIR}/"
-  export SYSROOT="${CD_TARGET_DIR}/"
-  export PORTAGE_CONFIGROOT="${CD_TARGET_DIR}/"
-
-  export PYTHONPATH="${CD_WRAPPER_PREFIX_DIR}/lib"
-  export PREROOTPATH="${CD_WRAPPER_PREFIX_DIR}/bin"
-  export PATH="${CD_WRAPPER_PREFIX_DIR}/bin:${PATH}"
-  export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
-
-  export CC="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-gcc --sysroot=${CD_TARGET_DIR}"
-  export CXX="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-g++ --sysroot=${CD_TARGET_DIR}"
-  export CPP="${CD_WRAPPER_PREFIX_DIR}/bin/${CD_TARGET}-cpp --sysroot=${CD_TARGET_DIR}"
+  cd_export_env_vars ${CD_TARGET} "${CD_TARGET_DIR}" "${CD_WRAPPER_PREFIX_DIR}"
 
   if (( ${#CD_ARGS[@]} )); then
     chroot "${CD_UNION_DIR}" /usr/bin/env -C "${PWD}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 "${CD_ARGS[@]}" || cd_die

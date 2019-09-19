@@ -112,6 +112,24 @@ cd_portageq() {
   ROOT="${root}" PORTAGE_CONFIGROOT="${root}" portageq "${@}" 2> /dev/null
 }
 
+cd_export_env_vars() {
+  local target=${1} target_dir=${2} wrapper_dir=${3}
+
+  export ROOT="${target_dir}/"
+  export SYSROOT="${target_dir}/"
+  export PORTAGE_CONFIGROOT="${target_dir}/"
+
+  export PYTHONPATH="${wrapper_dir}/lib"
+  export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
+
+  export CC="${wrapper_dir}/bin/${target}-gcc --sysroot=${target_dir}"
+  export CXX="${wrapper_dir}/bin/${target}-g++ --sysroot=${target_dir}"
+  export CPP="${wrapper_dir}/bin/${target}-cpp --sysroot=${target_dir}"
+
+  export PREROOTPATH="${wrapper_dir}/bin${PREROOTPATH+:}${PREROOTPATH}"
+  export PATH="${PREROOTPATH}:${PATH}"
+}
+
 cd_die() {
   local exit_code=$?
   if [ ! -z "${1}" ]; then

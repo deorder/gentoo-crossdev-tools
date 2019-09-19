@@ -67,8 +67,8 @@ for CD_TOOL in cc gcc cpp g++ c++; do
 cat << EOF > "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TARGET}-${CD_TOOL}"
 #!/bin/bash
 ARGS=("\$@")
-for ((INDEX=0; INDEX<"\${#ARGS[@]}"; ++INDEX)); do
-  FILTER=\${ARGS[INDEX]}
+for ((index=0; index<"\${#ARGS[@]}"; ++index)); do
+  FILTER=\${ARGS[index]}
   FILTER_SRC='-I/usr/include'
   FILTER_DST='-I${CD_TARGET_DIR}/usr/include'
   FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
@@ -84,7 +84,7 @@ for ((INDEX=0; INDEX<"\${#ARGS[@]}"; ++INDEX)); do
   FILTER_SRC='-L/usr/lib64'
   FILTER_DST='-L${CD_TARGET_DIR}/usr/lib64'
   FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-  ARGS[INDEX]=\${FILTER}
+  ARGS[index]=\${FILTER}
 done
 exec "${CD_TOOL_PATH}" "\${ARGS[@]}"
 EOF
