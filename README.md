@@ -2,23 +2,46 @@
 Cross-compile workarounds to use on environments created with `crossdev`
 
 ## Still being worked on
-Some packages may still not compile as it was tested on only a handful of packages.
+Some packages may still not compile as it was tested on only a handful of packages. In combination with my [overlay](https://github.com/deorder/gentoo-overlay) I was able to cross-compile an entire stage3 for the following targets: `aarch64-rpi3hs-linux-musleabi`, `aarch64-rpi3s-linux-gnueabi`, `armv7a-rpi2hs-linux-musleabihf`, `armv7a-rpi2s-linux-gnueabih`, `armv6j-rpi1hs-linux-musleabihf`, `armv6j-rpi1s-linux-gnueabihf`, `m68k-unknown-linux-gnu`
 
-In combination with my overlay I was able to cross-compile an entire stage3 for the following targets: `aarch64-rpi3hs-linux-musleabi`, `aarch64-rpi3s-linux-gnueabi`, `armv7a-rpi2hs-linux-musleabihf`, `armv7a-rpi2s-linux-gnueabih`, `armv6j-rpi1hs-linux-musleabihf`, `armv6j-rpi1s-linux-gnueabihf`, `m68k-unknown-linux-gnu`
+## Example: Building a stage3 for the Raspberry Pi 2 with glibc (armv7a-rpi2s-linux-gnueabihf)
 
-Perl and Python sometimes, when not using multilib, still install in `/usr/<target>/*/lib64` where it should install in `/usr/<target>/*/lib`. I solved this by creating symbolic links from `/usr/<target>/*/lib64` to `/usr/<target>/*/lib`.
+### Bootstrapping
 
-## How to use
-
-Example of building a stage3 for `armv7a-rpi2s-linux-gnueabihf`:
+First we create a crossdev environment for the `armv7a-rpi2s-linux-gnueabihf` target:
 ```
-./crossdev-create --cd-target armv7a-rpi2s-linux-gnueabihf
+./crossdev-create --cd-target armv7a-rpi2s-linux-gnueabihf --cd-use-rpi
+```
+The `--cd-use-rpi` will make sure Raspberry Pi supported kernel headers are used, currently 4.19.
+
+Copy one of the example portage configurations in `crossdev-example-profiles` to `/usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/`:
+```
 cp -a ./crossdev-example-profiles/armv7a-rpi2s-linux-gnueabihf/* /usr/armv7a-rpi2s-linux-gnueabihf/etc/portage/
+```
+Modify the copied portage configuration as needed. You for example may want the versions of Python to be the same as on your host in `/etc/portage/make.conf` (it planned to add code to do this automatically):
+```
+PYTHON_TARGETS="python2_7 python3_7"
+PYTHON_SINGLE_TARGET="python3_7"
+USE_PYTHON="2.7 3.7"
+```
+
+Build the essential packages that will be used to build the rest of the system:
+```
 ./crossdev-bootstrap --cd-target armv7a-rpi2s-linux-gnueabihf --cd-use-rpi
+```
+
+Build the system packages to complete the stage3:
+```
 ./crossdev-system-install --cd-target armv7a-rpi2s-linux-gnueabihf
 ```
 
-Example of chrooting into the `armv7a-rpi2s-linux-gnueabihf` environment:
+
+Install the Raspberry Pi kernel, firmware and overlay files:
+```
+./crossdev-linux-rpi-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-kernel-arch arm --cd-use-rpi 2
+```
+
+You can chroot into the environment (requires qemu and the user emulation binaries, see below):
 ```
 ./crossdev-qemu-binfmt-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi 2
 ./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
@@ -26,11 +49,7 @@ mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
 ```
 
-When done:
-```
-./crossdev-umount --cd-target armv7a-rpi2s-linux-gnueabihf
-umount /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
-```
+## Example: Setting up automatic mounting / unmounting hooks
 
 To let it automatically mount/unmount `/usr/portage`, create the following files:
 
@@ -71,10 +90,7 @@ if [ -d "${CD_TARGET_DIR}" ]; then
 fi
 ```
 
-Example of installing Raspberry Pi kernel, firmware and overlay files:
-```
-./crossdev-linux-rpi-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-kernel-arch arm --cd-use-rpi 2
-```
+## Usage
 
 ### crossdev-emerge
 
