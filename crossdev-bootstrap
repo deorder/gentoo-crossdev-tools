@@ -260,11 +260,11 @@ ebegin "Starting crossdev emerge with: ${CD_CROSSDEV_EMERGE_ARGS[*]}"
 eend 0
 
 ebegin "Creating directories that are still missing"
-mkdir -p "${CD_TARGET_DIR}"/{boot,dev,root,home,etc,bin,sbin,dev,sys,proc,srv,opt,tmp,run/lock,lib/firmware,usr/{,local/}{bin,sbin,lib,include,share/{misc,man/man{1..8}}},usr/{src,libexec,portage},var/{log,tmp,cache,spool}}
-ln -sv /run/lock "${CD_TARGET_DIR}/var/lock"
-ln -sv /run "${CD_TARGET_DIR}/var/run"
-chmod 1777 "${CD_TARGET_DIR}"/{tmp,var/tmp}
-chmod 0750 "${CD_TARGET_DIR}"/root
+mkdir -p "${CD_TARGET_DIR}"/{boot,dev,root,home,etc,bin,sbin,dev,sys,proc,srv,opt,tmp,run/lock,lib/firmware,usr/{,local/}{bin,sbin,lib,include,share/{misc,man/man{1..8}}},usr/{src,libexec,portage},var/{log,tmp,cache,spool}} || cd_die
+chmod 1777 "${CD_TARGET_DIR}"/{tmp,var/tmp} || cd_die
+chmod 0750 "${CD_TARGET_DIR}"/root || cd_die
+ln -fs /run/lock "${CD_TARGET_DIR}/var/lock"
+ln -fs /run "${CD_TARGET_DIR}/var/run"
 eend 0
 
 ebegin "Linking lib64 dirs to lib dirs, if possible"

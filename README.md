@@ -71,6 +71,11 @@ if [ -d "${CD_TARGET_DIR}" ]; then
 fi
 ```
 
+Example of installing Raspberry Pi kernel, firmware and overlay files:
+```
+./crossdev-rpi-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-kernel-arch arm --cd-use-rpi rpi2
+```
+
 ### crossdev-emerge
 
 Usage:
@@ -171,21 +176,30 @@ Example:
 ./crossdev-bootstrap --cd-use-rpi --cd-target aarch64-rpi3s-linux-gnueabi
 ```
 
-### crossdev-install-rpi3-firmware
+### crossdev-rpi-install
 
 Usage:
 ```
-usage: crossdev-install-rpi3-firmware ...
+usage: crossdev-rpi-install ...
 --cd-help (This help)
---cd-target "<target triplet>" (required)
---cd-prefix-dir "<prefix dir>" (empty)
---cd-config-dir "<config dir>" (/etc/crossdev)
---cd-target-dir "<target dir>" (/usr/<target>)
---cd-tmp-dir "<temp dir>" (/var/tmp)
+--cd-target "<target triplet>" (Target triplet) (required)
+--cd-prefix-dir "<prefix dir>" (Prefix dir) (<empty>)
+--cd-config-dir "<config dir>" (Config dir) (/etc/crossdev)
+--cd-target-dir "<target dir>" (Target dir) (/usr/<target>)
+--cd-tmp-dir "<temp dir>" (Temp dir) (/var/tmp)
+--cd-kernel-menu (Show kernel menu)
+--cd-kernel-clean (Clean kernel build)
+--cd-kernel-config <path> (Kernel config)
+--cd-kernel-branch <name> (Kernel branch)
+--cd-kernel-arch <arch> (Architecture to build kernel for)
+--cd-use-downstream-dtb (Install downstream / official dtb files)
+--cd-use-upstream-dtb (Install upstream / linux dtb files)
+--cd-firmware-branch <name> (Firmware branch)
+--cd-use-rpi <name> (Which RPi to target)
 ```
 Example:
 ```
-./crossdev-install-rpi3-firmware --cd-target aarch64-rpi3s-linux-gnueabi
+./crossdev-rpi-install --cd-target aarch64-rpi3hs-linux-musleabi --cd-kernel-arch arm64 --cd-use-rpi rpi3
 ```
   
 ### crossdev-qemu-wrapper-install
