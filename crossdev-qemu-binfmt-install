@@ -213,7 +213,7 @@ EOF
     chmod -v 755 "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
     eend 0
 
-    ebegin "Register qemu user emulation binfmt /usr/bin/qemu-${CD_QEMU_ARCH} for ${CD_QEMU_ARCH}"
+    ebegin "Registering qemu user emulation binfmt /usr/bin/qemu-${CD_QEMU_ARCH} for ${CD_QEMU_ARCH}"
     CD_QEMU_MASK_VAR="${CD_QEMU_ARCH}_mask"; CD_QEMU_MAGIC_VAR="${CD_QEMU_ARCH}_magic"
     echo ":qemu-${CD_QEMU_ARCH}:M::${!CD_QEMU_MAGIC_VAR}:${!CD_QEMU_MASK_VAR}:/usr/bin/qemu-${CD_QEMU_ARCH}:" > /proc/sys/fs/binfmt_misc/register 2> /dev/null
     eend 0
