@@ -1,5 +1,5 @@
 # Gentoo crossdev tools
-Cross-compile workarounds to use on environments created with `crossdev`
+Cross-compile tools to use with `crossdev`
 
 ## Still being worked on
 Some packages may still not compile as it was tested on only a handful of packages. In combination with my [overlay](https://github.com/deorder/gentoo-overlay) I was able to cross-compile an entire stage3 for the following targets: `aarch64-rpi3hs-linux-musleabi`, `aarch64-rpi3s-linux-gnueabi`, `armv7a-rpi2hs-linux-musleabihf`, `armv7a-rpi2s-linux-gnueabih`, `armv6j-rpi1hs-linux-musleabihf`, `armv6j-rpi1s-linux-gnueabihf`, `m68k-unknown-linux-gnu`
