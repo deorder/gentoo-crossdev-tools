@@ -46,7 +46,7 @@ mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
 ```
 
-## Example: Building a stage3 for the RPi 3 with musl
+## Example: Building a 64-bit stage3 for the RPi 3 with musl
 
 First we create a crossdev environment for the `aarch64-rpi3hs-linux-musleabi` target:
 ```
