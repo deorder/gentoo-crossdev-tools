@@ -314,7 +314,7 @@ Example:
 Before using this command you may want to create a `crossdev-cow-env-init-post` file containing:
 ```bash
 #!/bin/bash
-${CD_SCRIPT_DIR}/crossdev-mount --cd-target "${CD_TARGET}" --cd-target-dir "${CD_UNION_PREFIX_DIR}"
+${CD_SCRIPT_DIR}/crossdev-mount --cd-target "${CD_TARGET}" --cd-target-dir "${CD_UNION_DIR}"
 ```
 
 ### crossdev-cow-env-chroot
@@ -357,5 +357,5 @@ Example:
 Before using this command you may want to create a `crossdev-cow-env-uninit-pre` file containing:
 ```bash
 #!/bin/bash
-${CD_SCRIPT_DIR}/crossdev-umount --cd-target ${CD_TARGET} --cd-target-dir "${CD_UNION_PREFIX_DIR}"
+${CD_SCRIPT_DIR}/crossdev-umount --cd-target ${CD_TARGET} --cd-target-dir "${CD_UNION_DIR}"
 ```

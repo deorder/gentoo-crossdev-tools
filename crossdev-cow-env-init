@@ -13,13 +13,26 @@ fi
 
 export CD_COW_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
 export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
-
-mkdir -pv "${CD_COW_DIR}"; mkdir -pv "${CD_UNION_DIR}"
-
 export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
-export CD_WRAPPER_PREFIX_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}/usr
-export CD_WRAPPER_INSTALL_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}/usr
 
+export CD_CHOST=$(cd_portageq "${CD_PREFIX}" envvar CHOST)
+export CD_CHOST_TARGET_DIR=${CD_PREFIX_DIR}/usr/${CD_CHOST}/${CD_TARGET}
+
+if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-bashrc" ]; then
+  CD_BASH_RC_FILE="${CD_CONFIG_DIR}/crossdev-cow-env-bashrc"
+else
+  CD_BASH_RC_FILE="$(dirname $(readlink -e ${CD_SCRIPT_FILE}))/crossdev-cow-env-bashrc"
+fi
+
+function wrapper_map_dir() {
+  local source=${1} dest=${2}
+  mkdir -pv "${CD_WRAPPER_DIR}/${dest}" || cd_die
+  #cp -a "${source}"/* "${CD_WRAPPER_DIR}/${dest}" || cd_die
+  if ! cd_is_mount "${CD_WRAPPER_DIR}/${dest}"; then
+    mount -o ro,bind "${source}" "${CD_WRAPPER_DIR}/${dest}" || cd_die
+  fi
+}
+ 
 if ! cd_is_mount "${CD_UNION_PREFIX_DIR}"; then
 
   if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-init-pre" ]; then
@@ -30,12 +43,24 @@ if ! cd_is_mount "${CD_UNION_PREFIX_DIR}"; then
 
   ebegin "Initializing cow environment"
 
+  ebegin "Creating directories"
+  mkdir -pv "${CD_COW_DIR}" || cd_die
+  mkdir -pv "${CD_UNION_DIR}" || cd_die
+  mkdir -pv "${CD_WRAPPER_DIR}" || cd_die
+  eend 0
+
   ebegin "Creating wrapper environment"
-  "${CD_SCRIPT_DIR}/crossdev-wrapper-env-create" "${CD_ARGS[@]}" || cd_die
+  cp -av "${CD_BASH_RC_FILE}" "${CD_WRAPPER_DIR}"/profile || cd_die
+  chmod -v 755 "${CD_WRAPPER_DIR}"/profile || cd_die
+  eend 0
+
+  ebegin "Binding host/target mappings"
+  wrapper_map_dir "${CD_CHOST_TARGET_DIR}/gcc-bin" "/usr/${CD_TARGET}/gcc-bin" || cd_die
+  wrapper_map_dir "${CD_CHOST_TARGET_DIR}/binutils-bin" "/usr/${CD_TARGET}/binutils-bin" || cd_die
   eend 0
 
   ebegin "Mounting unionfs"
-  unionfs -o cow "${CD_COW_DIR}"=RW:"${CD_WRAPPER_DIR}"=RO:/=RO "${CD_UNION_DIR}" || cd_die
+  unionfs -o cow "${CD_COW_DIR}"=RW:"${CD_WRAPPER_DIR}"=RO:"${CD_TARGET_DIR}"=RO "${CD_UNION_DIR}" || cd_die
   eend 0
 
   eend 0
