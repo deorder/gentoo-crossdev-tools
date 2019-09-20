@@ -42,7 +42,7 @@ if [ -d ${CD_UNION_DIR} ]; then
     #wrapper_unmap_dir "/usr/${CD_TARGET}/binutils-bin" || cd_die
     eend 0
 
-    ebegin "Unmounting unionfs"
+    ebegin "Unmounting overlayfs"
     umount -v "${CD_UNION_DIR}" || cd_die
     eend 0
 

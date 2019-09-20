@@ -295,7 +295,7 @@ Example:
 
 ### crossdev-cow-env-init
 
-**Note:** This command requires `unionfs-fuse`
+**Note:** This command requires `overlayfs` to be enabled in the kernel
 
 Usage:
 ```
@@ -319,7 +319,7 @@ ${CD_SCRIPT_DIR}/crossdev-mount --cd-target "${CD_TARGET}" --cd-target-dir "${CD
 
 ### crossdev-cow-env-chroot
 
-**Note:** This command requires `unionfs-fuse`
+**Note:** This command requires `overlayfs` to be enabled in the kernel
 
 Usage:
 ```
@@ -338,7 +338,7 @@ Example:
 
 ### crossdev-cow-env-uninit
 
-**Note:** This command requires `unionfs-fuse`
+**Note:** This command requires `overlayfs` to be enabled in the kernel
 
 Usage:
 ```
