@@ -42,8 +42,13 @@ You can chroot into the environment (requires qemu and the user emulation binari
 ```
 ./crossdev-qemu-binfmt-install --cd-target armv7a-rpi2s-linux-gnueabihf --cd-qemu-arch arm --cd-use-rpi 2
 ./crossdev-mount --cd-target armv7a-rpi2s-linux-gnueabihf
-mount -o bind /usr/portage /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
+mount -o bind $(portageq get_repo_path / gentoo) /usr/armv7a-rpi2s-linux-gnueabihf/usr/portage
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
+```
+
+Alternatively you can use proot (requires qemu and the user emulation binaries, see below):
+```
+PROOT_NO_SECCOMP=1 proot -S /usr/armv7a-rpi2s-linux-gnueabihf -b $(portageq get_repo_path / gentoo) -q qemu-arm
 ```
 
 ## Example: Building a 64-bit stage3 for the RPi 3 with musl
@@ -84,8 +89,13 @@ You can chroot into the environment (requires qemu and the user emulation binari
 ```
 ./crossdev-qemu-binfmt-install --cd-target aarch64-rpi3hs-linux-musleabi --cd-qemu-arch aarch64 --cd-use-rpi 3
 ./crossdev-mount --cd-target aarch64-rpi3hs-linux-musleabi
-mount -o bind /usr/portage /usr/aarch64-rpi3hs-linux-musleabi/usr/portage
+mount -o bind $(portageq get_repo_path / gentoo) /usr/aarch64-rpi3hs-linux-musleabi/usr/portage
 chroot /usr/aarch64-rpi3hs-linux-musleabi /bin/bash
+```
+
+Alternatively you can use proot (requires qemu and the user emulation binaries, see below):
+```
+PROOT_NO_SECCOMP=1 proot -S /usr/aarch64-rpi3hs-linux-musleabi -b $(portageq get_repo_path / gentoo) -q qemu-aarch64
 ```
 
 ## Example: Setting up automatic mounting / unmounting hooks
