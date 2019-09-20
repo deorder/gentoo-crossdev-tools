@@ -50,7 +50,7 @@ or alternatively you can use proot (requires qemu and the user emulation binarie
 ```
 PROOT_NO_SECCOMP=1 proot -S /usr/armv7a-rpi2s-linux-gnueabihf -b $(portageq get_repo_path / gentoo) -q qemu-arm
 ```
-If possible use `proot` instead of `chroot`.
+**Note**: proot is resolving some symbolic links to the wrong target
 
 ## Example: Building a 64-bit stage3 for the RPi 3 with musl
 
@@ -98,7 +98,7 @@ or alternatively you can use proot (requires qemu and the user emulation binarie
 ```
 PROOT_NO_SECCOMP=1 proot -S /usr/aarch64-rpi3hs-linux-musleabi -b $(portageq get_repo_path / gentoo) -q qemu-aarch64
 ```
-If possible use `proot` instead of `chroot`.
+**Note**: proot is resolving some symbolic links to the wrong target
 
 ## Example: Setting up automatic mounting / unmounting hooks
 
