@@ -46,10 +46,11 @@ mount -o bind $(portageq get_repo_path / gentoo) /usr/armv7a-rpi2s-linux-gnueabi
 chroot /usr/armv7a-rpi2s-linux-gnueabihf /bin/bash
 ```
 
-Alternatively you can use proot (requires qemu and the user emulation binaries, see below):
+or alternatively you can use proot (requires qemu and the user emulation binaries, see below):
 ```
 PROOT_NO_SECCOMP=1 proot -S /usr/armv7a-rpi2s-linux-gnueabihf -b $(portageq get_repo_path / gentoo) -q qemu-arm
 ```
+If possible use `proot` instead of `chroot`.
 
 ## Example: Building a 64-bit stage3 for the RPi 3 with musl
 
@@ -93,10 +94,11 @@ mount -o bind $(portageq get_repo_path / gentoo) /usr/aarch64-rpi3hs-linux-musle
 chroot /usr/aarch64-rpi3hs-linux-musleabi /bin/bash
 ```
 
-Alternatively you can use proot (requires qemu and the user emulation binaries, see below):
+or alternatively you can use proot (requires qemu and the user emulation binaries, see below):
 ```
 PROOT_NO_SECCOMP=1 proot -S /usr/aarch64-rpi3hs-linux-musleabi -b $(portageq get_repo_path / gentoo) -q qemu-aarch64
 ```
+If possible use `proot` instead of `chroot`.
 
 ## Example: Setting up automatic mounting / unmounting hooks
 
