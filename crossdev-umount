@@ -21,25 +21,25 @@ if [ -d "${CD_TARGET_DIR}" ]; then
 
   if cd_is_mount "${CD_TARGET_DIR}/dev/pts"; then
     ebegin "Unmounting ${CD_TARGET_DIR}/dev/pts"
-    umount -Rv "${CD_TARGET_DIR}/dev/pts" || cd_die
+    umount -R "${CD_TARGET_DIR}/dev/pts" || cd_die
     eend 0
   fi
 
   if cd_is_mount "${CD_TARGET_DIR}/proc"; then
     ebegin "Unmounting ${CD_TARGET_DIR}/proc"
-    umount -Rv "${CD_TARGET_DIR}/proc" || cd_die
+    umount -R "${CD_TARGET_DIR}/proc" || cd_die
     eend 0
   fi
 
   if cd_is_mount "${CD_TARGET_DIR}/dev"; then
     ebegin "Unmounting ${CD_TARGET_DIR}/dev"
-    umount -Rv "${CD_TARGET_DIR}/dev" || cd_die
+    umount -R "${CD_TARGET_DIR}/dev" || cd_die
     eend 0
   fi
 
   if cd_is_mount "${CD_TARGET_DIR}/sys"; then
     ebegin "Unmounting ${CD_TARGET_DIR}/sys"
-    umount -Rv "${CD_TARGET_DIR}/sys" || cd_die
+    umount -R "${CD_TARGET_DIR}/sys" || cd_die
     eend 0
   fi
 
