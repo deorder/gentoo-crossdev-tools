@@ -63,7 +63,7 @@ if [ ! -z "${CD_HELP}" ]; then
   echo "--cd-use-distcc (Use distcc)"
   exit 1
 fi
-  
+
 if [ ! -z "${CD_USE_DISTCC}" ]; then
   einfo "Using distcc for wrapper"
 fi
