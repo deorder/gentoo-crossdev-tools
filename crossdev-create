@@ -185,11 +185,11 @@ CFLAGS="-O2 -pipe" CXXFLAGS="-O2 -pipe" PORTDIR_OVERLAY="" crossdev --target ${C
 eend 0
 
 ebegin "Moving the /etc/portage dir away"
-mv -v "${CD_TARGET_DIR}/etc/portage" "${CD_TARGET_DIR}/etc/portage.$(date +%Y%m%d%H%M%S)" || cd_die
+mv ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/etc/portage" "${CD_TARGET_DIR}/etc/portage.$(date +%Y%m%d%H%M%S)" || cd_die
 eend 0
 
 ebegin "Creating initial dirs"
-mkdir -pv "${CD_TARGET_DIR}/usr/src/linux" || cd_die
-mkdir -pv "${CD_TARGET_DIR}/etc/portage" || cd_die
-mkdir -pv "${CD_TARGET_DIR}/packages" || cd_die
+mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/usr/src/linux" || cd_die
+mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/etc/portage" || cd_die
+mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/packages" || cd_die
 eend 0

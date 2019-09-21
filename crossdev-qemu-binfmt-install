@@ -206,11 +206,11 @@ EOF
       ebegin "Installing qemu user emulation in ${CD_TARGET_DIR} for ${CD_QEMU_ARCH} using a custom wrapper"
     fi
 
-    cp -av "/usr/bin/qemu-${CD_QEMU_ARCH}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}-real" || cd_die
+    cp -a ${CD_NODEBUG:--v} "/usr/bin/qemu-${CD_QEMU_ARCH}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}-real" || cd_die
     echo gcc -static \"${CD_QEMU_WRAPPER_SRC_FILE}\" -O3 -s -o \"${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}\"
     gcc -static "${CD_QEMU_WRAPPER_SRC_FILE}" -O3 -s -o "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" || cd_die
-    cp -av "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
-    chmod -v 755 "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
+    cp -a ${CD_NODEBUG:--v} "${CD_TMP_DIR}/qemu-wrapper-${CD_TARGET}" "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
+    chmod ${CD_NODEBUG:--v} 755 "${CD_TARGET_DIR}/usr/bin/qemu-${CD_QEMU_ARCH}" || cd_die
     eend 0
 
     ebegin "Registering qemu user emulation binfmt /usr/bin/qemu-${CD_QEMU_ARCH} for ${CD_QEMU_ARCH}"

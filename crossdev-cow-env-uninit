@@ -34,7 +34,7 @@ if [ -d ${CD_UNION_DIR} ]; then
     ebegin "Uninitializing cow environment"
 
     ebegin "Killing all remaining processes"
-    fuser -Mkv "${CD_UNION_DIR}"
+    fuser -Mk ${CD_NODEBUG:--v} "${CD_UNION_DIR}"
     eend 0
 
     ebegin "Unbinding host/target mappings"
@@ -43,7 +43,7 @@ if [ -d ${CD_UNION_DIR} ]; then
     eend 0
 
     ebegin "Unmounting overlayfs"
-    umount -v "${CD_UNION_DIR}" || cd_die
+    umount ${CD_NODEBUG:--v} "${CD_UNION_DIR}" || cd_die
     eend 0
 
     eend 0
@@ -60,4 +60,3 @@ if [ -d ${CD_UNION_DIR} ]; then
 else
   eerror "Not a directory, cannot uninitialize"
 fi
-

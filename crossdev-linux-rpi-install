@@ -146,12 +146,12 @@ if [ -d "${CD_TARGET_DIR}" ]; then
   fi
   
   ebegin "Creating directories that are still missing"
-  mkdir -pv "${CD_TARGET_DIR}"/{boot/overlays,lib/firmware} || cd_die
+  mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}"/{boot/overlays,lib/firmware} || cd_die
   eend 0
 
   if [ ! -d "${CD_KERNEL_GIT_ROOT}/rpi-kernel" ]; then
     ebegin "Cloning kernel repository to ${CD_KERNEL_GIT_ROOT}/rpi-kernel (${CD_KERNEL_GIT_BRANCH})"
-    mkdir -pv "${CD_KERNEL_GIT_ROOT}" || cd_die
+    mkdir -p ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}" || cd_die
     git clone --single-branch --branch "${CD_KERNEL_GIT_BRANCH}" --depth=1 https://github.com/raspberrypi/linux.git "${CD_KERNEL_GIT_ROOT}/rpi-kernel" || cd_die
     eend 0
   fi
@@ -198,7 +198,7 @@ if [ -d "${CD_TARGET_DIR}" ]; then
       popd
     else
       ebegin "Copying kernel config ${CD_KERNEL_CONFIG} to ${CD_KERNEL_GIT_ROOT}/rpi-kernel"
-      cp -av "${CD_KERNEL_CONFIG}" "${CD_KERNEL_GIT_ROOT}/rpi-kernel/.config" || cd_die
+      cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_CONFIG}" "${CD_KERNEL_GIT_ROOT}/rpi-kernel/.config" || cd_die
       eend 0
     fi
     eend 0
@@ -217,10 +217,10 @@ if [ -d "${CD_TARGET_DIR}" ]; then
 
     ebegin "Installing kernel from ${CD_KERNEL_GIT_ROOT}/rpi-kernel to ${CD_TARGET_DIR}/boot/"
     if [ "${CD_KERNEL_ARCH}" == "arm" ]; then
-      cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/Image" "${CD_TARGET_DIR}/boot/kernel7.img" || cd_die
+      cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/Image" "${CD_TARGET_DIR}/boot/kernel7.img" || cd_die
     fi
     if [ "${CD_KERNEL_ARCH}" == "arm64" ]; then
-      cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/Image" "${CD_TARGET_DIR}/boot/kernel8.img" || cd_die
+      cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/Image" "${CD_TARGET_DIR}/boot/kernel8.img" || cd_die
     fi
     eend 0
 
@@ -234,28 +234,28 @@ if [ -d "${CD_TARGET_DIR}" ]; then
       ebegin "Installing upstream dtb files from ${CD_KERNEL_GIT_ROOT}/rpi-kernel to ${CD_TARGET_DIR}/boot/"
       case ${CD_USE_RPI} in
         *0w*)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *0*)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *1*+)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *1*)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *2*)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *3*+)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *3*)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *4*)
-        cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *)
         ewarn "No upstream dtb files for ${CD_KERNEL_ARCH} and ${CD_USE_RPI} found, unknown RPi"
@@ -264,7 +264,7 @@ if [ -d "${CD_TARGET_DIR}" ]; then
       eend 0
 
       ebegin "Installing upstream overlay files from ${CD_KERNEL_GIT_ROOT}/rpi-kernel to ${CD_TARGET_DIR}/boot/"
-      cp -av "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/overlays"/* "${CD_TARGET_DIR}/boot/overlays" || cd_die
+      cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/overlays"/* "${CD_TARGET_DIR}/boot/overlays" || cd_die
       eend 0
     else
       einfo "Not installing upstream dtb files"
@@ -274,7 +274,7 @@ if [ -d "${CD_TARGET_DIR}" ]; then
 
   if [ ! -d "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware" ]; then
     ebegin "Cloning firmware repository to ${CD_FIRMWARE_GIT_ROOT}/rpi-firmware (${CD_FIRMWARE_GIT_BRANCH})"
-    mkdir -pv "${CD_FIRMWARE_GIT_ROOT}" || cd_die
+    mkdir -p ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}" || cd_die
     git clone --single-branch --branch "${CD_FIRMWARE_GIT_BRANCH}" --depth=1 https://github.com/raspberrypi/firmware.git "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware" || cd_die
     eend 0
   fi
@@ -289,35 +289,35 @@ if [ -d "${CD_TARGET_DIR}" ]; then
     eend 0
 
     ebegin "Installing firmware from ${CD_FIRMWARE_GIT_ROOT}/rpi-firmware to ${CD_TARGET_DIR}/boot/"
-    cp -rav "${CD_TMP_DIR}"/rpi-firmware/boot/{COPYING.linux,LICENCE.broadcom,bootcode.bin,start*,fixup*} "${CD_TARGET_DIR}/boot/" || cd_die
+    cp -ra ${CD_NODEBUG:--v} "${CD_TMP_DIR}"/rpi-firmware/boot/{COPYING.linux,LICENCE.broadcom,bootcode.bin,start*,fixup*} "${CD_TARGET_DIR}/boot/" || cd_die
     eend 0
 
     if [ "${CD_USE_DTB}" == "downstream" ]; then
       ebegin "Installing downstream dtb files from ${CD_KERNEL_GIT_ROOT}/rpi-kernel to ${CD_TARGET_DIR}/boot/"
       case ${CD_USE_RPI} in
         *0w*)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *0*)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *1*+)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *1*)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *2*)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *3*+)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *3*)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *4*)
-        cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
         ;;
         *)
         ewarn "No upstream dtb files for ${CD_KERNEL_ARCH} and ${CD_USE_RPI} found, unknown RPi"
@@ -326,7 +326,7 @@ if [ -d "${CD_TARGET_DIR}" ]; then
       eend 0
 
       ebegin "Installing downstream overlay files from ${CD_KERNEL_GIT_ROOT}/rpi-kernel to ${CD_TARGET_DIR}/boot/"
-      cp -av "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot/overlays"/* "${CD_TARGET_DIR}/boot/overlays" || cd_die
+      cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot/overlays"/* "${CD_TARGET_DIR}/boot/overlays" || cd_die
       eend 0
     else
       einfo "Not installing downstream dtb files"

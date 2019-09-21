@@ -11,6 +11,9 @@ cd_parse_arguments() {
       *-cd-help)
       CD_HELP=1
       ;;
+      *-cd-debug)
+      CD_DEBUG=1
+      ;;
       *-cd-target)
       shift; CD_TARGET="${1}"
       ;;
@@ -64,6 +67,9 @@ cd_parse_arguments() {
   fi
 
   if [ -z "${CD_HELP}" ]; then
+    if [ -z "${CD_DEBUG}" ]; then
+      CD_NODEBUG=" "
+    fi
     if [ -z "${CD_PREFIX_DIR}" ]; then
       CD_PREFIX_DIR=""
       #ewarn "No temp dir specified, using: ${CD_PREFIX_DIR}"
@@ -82,13 +88,14 @@ cd_parse_arguments() {
     fi
   fi
 
-  export CD_TARGET CD_TMP_DIR CD_PREFIX_DIR CD_TARGET_PREFIX_DIR CD_TARGET_DIR CD_CONFIG_DIR
+  export CD_TARGET CD_TMP_DIR CD_PREFIX_DIR CD_TARGET_PREFIX_DIR CD_TARGET_DIR CD_CONFIG_DIR CD_DEBUG
 
 }
 
 cd_print_usage_header() {
   echo "usage: ${CD_SCRIPT_FILE} ..."
   echo "--cd-help (This help)"
+  echo "--cd-debug (Verbose output)"
   echo "--cd-target \"<target triplet>\" (Target triplet) (${CD_TARGET-"required"})"
   echo "--cd-prefix-dir \"<prefix dir>\" (Prefix dir) (${CD_PREFIX_DIR:-"<empty>"})"
   echo "--cd-config-dir \"<config dir>\" (Config dir) (${CD_CONFIG_DIR:-"${CD_PREFIX_DIR}/etc/crossdev"})"

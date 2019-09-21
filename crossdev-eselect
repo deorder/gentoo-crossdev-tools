@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CD_ESELECT_ARGS=()
+
 CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 source "${CD_CUR_DIR}/crossdev-functions.sh"
