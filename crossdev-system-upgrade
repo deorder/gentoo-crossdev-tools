@@ -11,7 +11,7 @@ if [ ! -z "${CD_HELP}" ]; then
   exit 1
 fi
 
-CD_ARGS+=("--ask" "--tree" "--with-bdeps=y" "--complete-graph=y" "--binpkg-respect-use=y" "--backtrack=300" "--verbose-conflicts" "--update" "--newuse" "--deep" "@system")
+CD_ARGS+=("--ask" "--tree" "--complete-graph=y" "--binpkg-respect-use=y" "--backtrack=300" "--verbose-conflicts" "--update" "--newuse" "--deep" "@system")
 
 ebegin "Starting crossdev emerge with: ${CD_ARGS[*]}"
 "${CD_SCRIPT_DIR}/crossdev-emerge" "${CD_ARGS[@]}" || cd_die
