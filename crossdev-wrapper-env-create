@@ -77,12 +77,15 @@ mkdir -p ${CD_NODEBUG:--v} "${CD_WRAPPER_INSTALL_DIR}/lib64/pkgconfig"
 
 for CD_TOOL in cc gcc cpp g++ c++ clang clang++; do
 
+  CD_TOOL_ARGS=()
   CD_TOOL_PATH="$(readlink -e "/usr/bin/${CD_TARGET}-${CD_TOOL}" 2> /dev/null)"
   if [ ! -z "${CD_USE_DISTCC}" ]; then
     if [ -f "/usr/lib/distcc/bin/${CD_TARGET}-${CD_TOOL}" ]; then
+      CD_TOOL_ARGS+=("${CD_TARGET}-${CD_TOOL}")
       CD_TOOL_PATH="$(readlink -e "/usr/lib/distcc/bin/${CD_TARGET}-${CD_TOOL}" 2> /dev/null)"
     fi
   fi
+  CD_TOOL_ARGS+=("--sysroot=\"${CD_TARGET_DIR}\"")
 
   if [ -f "${CD_TOOL_PATH}" ]; then
 
@@ -110,7 +113,7 @@ FILTER_DST='-L${CD_TARGET_DIR}/usr/lib64'
 FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
 ARGS[index]=\${FILTER}
 done
-exec "${CD_TOOL_PATH}" --sysroot="${CD_TARGET_DIR}" "\${ARGS[@]}"
+exec "${CD_TOOL_PATH}" ${CD_TOOL_ARGS[@]} "\${ARGS[@]}"
 EOF
 
     if [ ! -z "${CD_USE_DISTCC}" ]; then
