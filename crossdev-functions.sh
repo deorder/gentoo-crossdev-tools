@@ -2,7 +2,7 @@
 
 CD_ARGS=()
 
-source /etc/init.d/functions.sh
+source /lib/gentoo/functions.sh
 
 cd_parse_arguments() {
 
@@ -173,5 +173,9 @@ cd_is_mount() {
 
 CD_SCRIPT_FILE=$(basename "$(readlink -e "${BASH_SOURCE[1]}")")
 CD_SCRIPT_DIR=$(dirname "$(readlink -e "${BASH_SOURCE[1]}")")
+
+if [ -z "${CD_ORG_PATH}" ]; then
+  export CD_ORG_PATH="${PATH}"
+fi
 
 export CD_SCRIPT_DIR CD_SCRIPT_FILE
