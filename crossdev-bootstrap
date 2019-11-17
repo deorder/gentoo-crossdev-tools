@@ -1,6 +1,7 @@
 #!/bin/bash
 
 CD_USE_VER="host"
+
 CD_CROSSDEV_EMERGE_ARGS=()
 
 CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
@@ -199,15 +200,18 @@ fi
 
 if [ ! -z "${CD_PERL_VER}" ]; then
   einfo "Using perl version: ${CD_PERL_VER}";
-  CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
+  CD_CROSSDEV_PERL_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
+  #CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
 else
   CD_PERL_VER=$(cd_get_package_version_by_path "${CD_GET_PACKAGE_DIR}" "%{PV}" "/usr/bin/perl")
   if [ ! -z "${CD_PERL_VER}" ]; then
     einfo "No perl version specified, using: ${CD_PERL_VER}";
-    CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
+    CD_CROSSDEV_PERL_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
+    #CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
   else
     einfo "No perl version specified, using latest";
-    CD_CROSSDEV_EMERGE_ARGS+=("dev-lang/perl")
+    CD_CROSSDEV_PERL_EMERGE_ARGS+=("dev-lang/perl")
+    #CD_CROSSDEV_EMERGE_ARGS+=("dev-lang/perl")
   fi
 fi
 
@@ -224,7 +228,8 @@ else
   fi
 fi
 for CD_PYTHON_VER in ${CD_PYTHON_VERS}; do
-  CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/python-${CD_PYTHON_VER}*")
+  CD_CROSSDEV_PYTHON_EMERGE_ARGS+=("=dev-lang/python-${CD_PYTHON_VER}*")
+  #CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/python-${CD_PYTHON_VER}*")
 done
 
 if [ -f "${CD_CONFIG_DIR}/crossdev-bootstrap-pre" ]; then
@@ -282,6 +287,14 @@ cat << EOF > "${CD_TARGET_DIR}/etc/portage/package.mask/perl"
 EOF
 fi
 
+eend 0
+
+ebegin "Starting crossdev python emerge with: ${CD_CROSSDEV_PYTHON_EMERGE_ARGS[*]}"
+"${CD_SCRIPT_DIR}/crossdev-emerge" --ask --tree --oneshot "${CD_CROSSDEV_PYTHON_EMERGE_ARGS[@]}" || cd_die
+eend 0
+
+ebegin "Starting crossdev perl emerge with: ${CD_CROSSDEV_PERL_EMERGE_ARGS[*]}"
+"${CD_SCRIPT_DIR}/crossdev-emerge" --ask --tree --oneshot "${CD_CROSSDEV_PERL_EMERGE_ARGS[@]}" || cd_die
 eend 0
 
 ebegin "Starting crossdev emerge with: ${CD_CROSSDEV_EMERGE_ARGS[*]}"

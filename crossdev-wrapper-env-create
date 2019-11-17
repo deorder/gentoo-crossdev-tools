@@ -178,17 +178,26 @@ sys.path.extend(sys_path)
 #for key in _sysconfigdata.build_time_vars:
 #  print(key, _sysconfigdata.build_time_vars[key])
 
-if 'distutils.sysconfig' in sys.modules:
-  del sys.modules['distutils.sysconfig']
-import distutils.sysconfig
+try:
+  if 'distutils.sysconfig' in sys.modules:
+    del sys.modules['distutils.sysconfig']
+  import distutils.sysconfig
+except ImportError as error:
+  pass
 
-if '_sysconfigdata' in sys.modules:
-  del sys.modules['_sysconfigdata']
-import _sysconfigdata
+try:
+  if '_sysconfigdata' in sys.modules:
+    del sys.modules['_sysconfigdata']
+  import _sysconfigdata
+except ImportError as error:
+  pass
 
-if 'sysconfig' in sys.modules:
-  del sys.modules['sysconfig']
-import sysconfig
+try:
+  if 'sysconfig' in sys.modules:
+    del sys.modules['sysconfig']
+  import sysconfig
+except ImportError as error:
+  pass
 
 #def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
 #    if prefix:
@@ -221,11 +230,29 @@ ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${C
 ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_MAJ}.pc" || cd_die
 ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" || cd_die
 
-ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" || cd_die
-
 if [ -d "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" ]; then
   if [ ! -z "$(find "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" -name "_sysconfigdata*.py" | head -n 1)" ]; then
+    ebegin "Linking ${CD_PYTHON_VER} _sysconfigdata (${CD_LIB_DIR})"
     ln -fs ${CD_NODEBUG:--v} "$(find "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" -name "_sysconfigdata*.py" | head -n 1)" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/_sysconfigdata.py" || cd_die
+    eend 0
+  fi
+  if [ -f "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" ]; then
+    ebegin "Linking ${CD_PYTHON_VER} sysconfig.py (${CD_LIB_DIR})"
+    ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" || cd_die
+    eend 0
+  fi
+else
+  if [ -d "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/lib64/python${CD_PYTHON_VER}/" ]; then
+    if [ ! -z "$(find "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/lib64/python${CD_PYTHON_VER}/" -name "_sysconfigdata*.py" | head -n 1)" ]; then
+      ebegin "Linking ${CD_PYTHON_VER} _sysconfigdata (lib64 -> ${CD_LIB_DIR})"
+      ln -fs ${CD_NODEBUG:--v} "$(find "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/lib64/python${CD_PYTHON_VER}/" -name "_sysconfigdata*.py" | head -n 1)" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/_sysconfigdata.py" || cd_die
+      eend 0
+    fi
+  fi
+  if [ -f "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/lib64/python${CD_PYTHON_VER}/sysconfig.py" ]; then
+    ebegin "Linking ${CD_PYTHON_VER} sysconfig.py (lib64 -> ${CD_LIB_DIR})"
+    ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/lib64/python${CD_PYTHON_VER}/sysconfig.py" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/sysconfig.py" || cd_die
+    eend 0
   fi
 fi
 
