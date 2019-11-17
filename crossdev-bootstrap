@@ -52,6 +52,12 @@ cd_parse_extra_arguments() {
       *-cd-binutils-ver=*)
       CD_BINUTILS_VER="${1#*=}"
       ;;
+      *-cd-perl-ver)
+      shift; CD_PERL_VER="${1}"
+      ;;
+      *-cd-perl-ver=*)
+      CD_PERL_VER="${1#*=}"
+      ;;
       --)
       shift;
       while (( ${#@} )); do
@@ -78,8 +84,10 @@ if [ ! -z "${CD_HELP}" ]; then
   echo "--cd-use-glibc (Use glibc as the libc)"
   echo "--cd-gcc-ver <version> (Override GCC version to use)"
   echo "--cd-libc-ver <version> (Override libc version to use)"
+  echo "--cd-perl-ver <version> (Override perl version to use)"
   echo "--cd-kernel-ver <version> (Override kernel version to use)"
   echo "--cd-binutils-ver <version> (Override binutils version to use)"
+  echo "--cd-perl-ver <version> (Override perl version to use)"
   echo "--cd-use-ver-target (Use same versions as on target)"
   echo "--cd-use-ver-host (Use same versions as on host)"
   exit 1
@@ -189,6 +197,20 @@ else
   fi
 fi
 
+if [ ! -z "${CD_PERL_VER}" ]; then
+  einfo "Using perl version: ${CD_PERL_VER}";
+  CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
+else
+  CD_PERL_VER=$(cd_get_package_version_by_path "${CD_GET_PACKAGE_DIR}" "%{PV}" "/usr/bin/perl")
+  if [ ! -z "${CD_PERL_VER}" ]; then
+    einfo "No perl version specified, using: ${CD_PERL_VER}";
+    CD_CROSSDEV_EMERGE_ARGS+=("=dev-lang/perl-${CD_PERL_VER}")
+  else
+    einfo "No perl version specified, using latest";
+    CD_CROSSDEV_EMERGE_ARGS+=("dev-lang/perl")
+  fi
+fi
+
 CD_PYTHON_VERS=$(cd_portageq "${CD_TARGET_DIR}" envvar USE_PYTHON)
 if [ ! -z "${CD_PYTHON_VERS}" ]; then
   einfo "Using python versions (from target profile): ${CD_PYTHON_VERS}";
@@ -250,6 +272,13 @@ if [ ! -z "${CD_KERNEL_VER}" ]; then
 cat << EOF > "${CD_TARGET_DIR}/etc/portage/package.mask/linux-headers"
 >sys-kernel/linux-headers-${CD_KERNEL_VER}
 <sys-kernel/linux-headers-${CD_KERNEL_VER}
+EOF
+fi
+
+if [ ! -z "${CD_PERL_VER}" ]; then
+cat << EOF > "${CD_TARGET_DIR}/etc/portage/package.mask/perl"
+>dev-lang/perl-${CD_PERL_VER}
+<dev-lang/perl-${CD_PERL_VER}
 EOF
 fi
 
