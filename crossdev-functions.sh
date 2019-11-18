@@ -61,6 +61,8 @@ cd_parse_arguments() {
     shift
   done
 
+  CD_HOST=$(gcc -dumpmachine)
+
   if [ -z "${CD_TARGET}" ]; then
     eerror "No target specified, use --cd-target"
     CD_HELP=1
@@ -120,6 +122,7 @@ cd_portageq() {
 }
 
 cd_export_env_vars() {
+  local host=${CD_HOST}
   local target=${1} target_dir=${2} wrapper_dir=${3}
 
   export ROOT="${target_dir}/"
@@ -129,6 +132,10 @@ cd_export_env_vars() {
   export CC="${wrapper_dir}/bin/${target}-gcc"
   export CXX="${wrapper_dir}/bin/${target}-g++"
   export CPP="${wrapper_dir}/bin/${target}-cpp"
+
+  export CC_host="${wrapper_dir}/bin/${host}-gcc"
+  export CXX_host="${wrapper_dir}/bin/${host}-g++"
+  export CPP_host="${wrapper_dir}/bin/${host}-cpp"
 
   export PYTHONPATH="${wrapper_dir}/lib"
   export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata

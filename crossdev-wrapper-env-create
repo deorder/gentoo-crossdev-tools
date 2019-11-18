@@ -77,21 +77,79 @@ mkdir -p ${CD_NODEBUG:--v} "${CD_WRAPPER_INSTALL_DIR}/lib64/pkgconfig"
 
 for CD_TOOL in cc gcc cpp g++ c++ clang clang++; do
 
-  CD_TOOL_ARGS=()
-  CD_TOOL_PATH="/usr/bin/${CD_TARGET}-${CD_TOOL}"
+  CD_HOST_TOOL_ARGS=()
+  CD_TARGET_TOOL_ARGS=()
 
-  if [ -f "${CD_TOOL_PATH}" ]; then
+  CD_HOST_TOOL_PATH="/usr/bin/${CD_HOST}-${CD_TOOL}"
+  CD_TARGET_TOOL_PATH="/usr/bin/${CD_TARGET}-${CD_TOOL}"
 
-    ebegin "Generating wrapper for ${CD_TOOL}"
+  if [ -f "${CD_HOST_TOOL_PATH}" ]; then
+
+    ebegin "Generating wrapper for ${CD_HOST}-${CD_TOOL}"
       
-    CD_TOOL_PATH="$(readlink -e "${CD_TOOL_PATH}" 2> /dev/null)"
+    CD_HOST_TOOL_PATH="$(readlink -e "${CD_HOST_TOOL_PATH}" 2> /dev/null)"
 
     if [ ! -z "${CD_USE_DISTCC}" ]; then
-      CD_TOOL_PATH="/usr/bin/distcc"
-      CD_TOOL_ARGS+=("${CD_TARGET}-${CD_TOOL}")
+      CD_HOST_TOOL_PATH="/usr/bin/distcc"
+      CD_HOST_TOOL_ARGS+=("${CD_TARGET}-${CD_TOOL}")
     fi
 
-    CD_TOOL_ARGS+=("--sysroot=\"${CD_TARGET_DIR}\"")
+cat << EOF > "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_HOST}-${CD_TOOL}"
+#!/bin/bash
+ARGS=("\$@")
+for ((index=0; index<"\${#ARGS[@]}"; ++index)); do
+FILTER=\${ARGS[index]}
+
+FILTER_SRC='-I${CD_TARGET_DIR}'
+FILTER_DST='-I'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L${CD_TARGET_DIR}'
+FILTER_DST='-L'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+
+FILTER_SRC='-I/usr/include'
+FILTER_DST='-I${CD_PREFIX_DIR}/usr/include'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/lib'
+FILTER_DST='-L${CD_PREFIX_DIR}/lib'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/lib64'
+FILTER_DST='-L${CD_PREFIX_DIR}/lib64'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/usr/lib'
+FILTER_DST='-L${CD_PREFIX_DIR}/usr/lib'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/usr/lib64'
+FILTER_DST='-L${CD_PREFIX_DIR}/usr/lib64'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+
+ARGS[index]=\${FILTER}
+done
+export PATH="${CD_ORG_PATH}"
+exec "${CD_HOST_TOOL_PATH}" ${CD_HOST_TOOL_ARGS[@]} "\${ARGS[@]}"
+EOF
+
+    if [ ! -z "${CD_USE_DISTCC}" ]; then
+      ln -fs ${CD_NODEBUG:--v} "./${CD_HOST}-${CD_TOOL}" "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TOOL}" || cd_die
+    fi
+
+    chmod ${CD_NODEBUG:--v} 755 "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_HOST}-${CD_TOOL}" || cd_die
+    eend 0
+
+  fi
+
+  if [ -f "${CD_TARGET_TOOL_PATH}" ]; then
+
+    ebegin "Generating wrapper for ${CD_TARGET}-${CD_TOOL}"
+      
+    CD_TARGET_TOOL_PATH="$(readlink -e "${CD_TARGET_TOOL_PATH}" 2> /dev/null)"
+
+    if [ ! -z "${CD_USE_DISTCC}" ]; then
+      CD_TARGET_TOOL_PATH="/usr/bin/distcc"
+      CD_TARGET_TOOL_ARGS+=("${CD_TARGET}-${CD_TOOL}")
+    fi
+
+    CD_TARGET_TOOL_ARGS+=("--sysroot=\"${CD_TARGET_DIR}\"")
 
 cat << EOF > "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TARGET}-${CD_TOOL}"
 #!/bin/bash
@@ -116,7 +174,7 @@ FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
 ARGS[index]=\${FILTER}
 done
 export PATH="${CD_ORG_PATH}"
-exec "${CD_TOOL_PATH}" ${CD_TOOL_ARGS[@]} "\${ARGS[@]}"
+exec "${CD_TARGET_TOOL_PATH}" ${CD_TARGET_TOOL_ARGS[@]} "\${ARGS[@]}"
 EOF
 
     if [ ! -z "${CD_USE_DISTCC}" ]; then
