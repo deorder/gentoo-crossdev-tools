@@ -188,6 +188,19 @@ EOF
 
 done
 
+for CD_TOOL in libtool; do
+
+  CD_TOOL_FROM_PATH="/usr/${CD_TARGET}/usr/bin/${CD_TOOL}"
+  CD_TOOL_TO_PATH="${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TOOL}"
+
+  if [ -f "${CD_TOOL_FROM_PATH}" ]; then
+    ebegin "Linking ${CD_TOOL}"
+    ln -fs ${CD_NODEBUG:--v} "${CD_TOOL_FROM_PATH}" "${CD_TOOL_TO_PATH}" || cd_die
+    eend 0
+  fi
+
+done
+
 CD_PYTHON_VERS=$(find "${CD_PYTHON_PREFIX_DIR}/bin" -regex ".*python[0-9]+.[\.0-9]+[a-z]*$" | sed 's/.*\/python//g' | sort | uniq)
 
 for CD_PYTHON_VER in ${CD_PYTHON_VERS}; do
@@ -201,6 +214,7 @@ exec "${CD_TARGET_DIR}/usr/bin/python${CD_PYTHON_VER}-config" "\${@}"
 EOF
 
 chmod ${CD_NODEBUG:--v} 750 "${CD_WRAPPER_INSTALL_DIR}/bin/python${CD_PYTHON_VER}-config"
+
 ln -fs ${CD_NODEBUG:--v} ./python${CD_PYTHON_VER}-config "${CD_WRAPPER_INSTALL_DIR}/bin/python-config"
 ln -fs ${CD_NODEBUG:--v} ./python${CD_PYTHON_VER}-config "${CD_WRAPPER_INSTALL_DIR}/bin/python${CD_PYTHON_MAJ}-config"
 
@@ -284,9 +298,23 @@ EOF
 
 mkdir -p ${CD_NODEBUG:--v} "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}" || cd_die
 
-ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python.pc" || cd_die
-ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_MAJ}.pc" || cd_die
-ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" || cd_die
+if [ -f "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" ]; then
+  ebegin "Linking pkgconfig"
+  ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python.pc" || cd_die
+  eend 0
+fi
+
+if [ -f "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" ]; then
+  ebegin "Linking ${CD_PYTHON_MAJ} pkgconfig"
+  ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_MAJ}.pc" || cd_die
+  eend 0
+fi
+
+if [ -f "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" ]; then
+  ebegin "Linking ${CD_PYTHON_VER} pkgconfig"
+  ln -fs ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/${CD_TARGET_PKGCONFIG_PREFIX_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" "${CD_WRAPPER_INSTALL_DIR}/${CD_LIB_DIR}/pkgconfig/python-${CD_PYTHON_VER}.pc" || cd_die
+  eend 0
+fi
 
 if [ -d "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" ]; then
   if [ ! -z "$(find "${CD_TARGET_DIR}/${CD_TARGET_PYTHON_PREFIX_DIR}/${CD_LIB_DIR}/python${CD_PYTHON_VER}/" -name "_sysconfigdata*.py" | head -n 1)" ]; then

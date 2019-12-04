@@ -129,13 +129,17 @@ cd_export_env_vars() {
   export SYSROOT="${target_dir}/"
   export PORTAGE_CONFIGROOT="${target_dir}/"
 
-  export CC="${wrapper_dir}/bin/${target}-gcc"
-  export CXX="${wrapper_dir}/bin/${target}-g++"
-  export CPP="${wrapper_dir}/bin/${target}-cpp"
+  #export CC="${wrapper_dir}/bin/${target}-gcc"
+  #export CXX="${wrapper_dir}/bin/${target}-g++"
+  #export CPP="${wrapper_dir}/bin/${target}-cpp"
 
   export CC_host="${wrapper_dir}/bin/${host}-gcc"
   export CXX_host="${wrapper_dir}/bin/${host}-g++"
   export CPP_host="${wrapper_dir}/bin/${host}-cpp"
+
+  export CC_target="${wrapper_dir}/bin/${target}-gcc"
+  export CXX_target="${wrapper_dir}/bin/${target}-g++"
+  export CPP_target="${wrapper_dir}/bin/${target}-cpp"
 
   export PYTHONPATH="${wrapper_dir}/lib"
   export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata

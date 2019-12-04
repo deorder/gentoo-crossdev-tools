@@ -186,6 +186,9 @@ if [ -d "${CD_TARGET_DIR}" ]; then
       fi
       if [ "${CD_KERNEL_ARCH}" == "arm64" ]; then
         case ${CD_USE_RPI} in
+          *4*)
+          ARCH=${CD_KERNEL_ARCH} CROSS_COMPILE=${CD_TARGET}- make bcm2711_defconfig || cd_die
+          ;;
           *3*)
           ARCH=${CD_KERNEL_ARCH} CROSS_COMPILE=${CD_TARGET}- make bcmrpi3_defconfig || cd_die
           ;;
@@ -234,28 +237,45 @@ if [ -d "${CD_TARGET_DIR}" ]; then
       ebegin "Installing upstream dtb files from ${CD_KERNEL_GIT_ROOT}/rpi-kernel to ${CD_TARGET_DIR}/boot/"
       case ${CD_USE_RPI} in
         *0w*)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-zero-w.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-zero.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-0.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *0*)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-zero.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-0.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *1*+)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *1*)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *2*)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *3*+)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-cm3.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *3*)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-cm3.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *4*)
-        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_KERNEL_GIT_ROOT}/rpi-kernel/arch/${CD_KERNEL_ARCH}/boot/dts/broadcom"/bcm*-rpi-cm3.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *)
         ewarn "No upstream dtb files for ${CD_KERNEL_ARCH} and ${CD_USE_RPI} found, unknown RPi"
@@ -296,28 +316,45 @@ if [ -d "${CD_TARGET_DIR}" ]; then
       ebegin "Installing downstream dtb files from ${CD_KERNEL_GIT_ROOT}/rpi-kernel to ${CD_TARGET_DIR}/boot/"
       case ${CD_USE_RPI} in
         *0w*)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-zero-w.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-0-w.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-zero.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-0.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *0*)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-zero.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-0.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *1*+)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *1*)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-cm.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *2*)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-2-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *3*+)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b-plus.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-cm3.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *3*)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-3-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-cm3.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *4*)
-        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" || cd_die
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-4-b.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
+        cp -a ${CD_NODEBUG:--v} "${CD_FIRMWARE_GIT_ROOT}/rpi-firmware/boot"/bcm*-rpi-cm3.dtb "${CD_TARGET_DIR}/boot" 2> /dev/null
         ;;
         *)
         ewarn "No upstream dtb files for ${CD_KERNEL_ARCH} and ${CD_USE_RPI} found, unknown RPi"
