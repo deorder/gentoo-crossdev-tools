@@ -13,12 +13,12 @@ fi
 
 export CD_COW_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
 export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
-export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
+export CD_COW_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
 
 function wrapper_unmap_dir() {
   local dest=${1}
-  if cd_is_mount "${CD_WRAPPER_DIR}/${dest}"; then
-    umount "${CD_WRAPPER_DIR}/${dest}" || cd_die
+  if cd_is_mount "${CD_UNION_DIR}/${dest}"; then
+    umount "${CD_UNION_DIR}/${dest}" || cd_die
   fi
 }
 
@@ -38,8 +38,10 @@ if [ -d ${CD_UNION_DIR} ]; then
     eend 0
 
     ebegin "Unbinding host/target mappings"
-    #wrapper_unmap_dir "/usr/${CD_TARGET}/gcc-bin" || cd_die
-    #wrapper_unmap_dir "/usr/${CD_TARGET}/binutils-bin" || cd_die
+    wrapper_unmap_dir "/host" || cd_die
+    wrapper_unmap_dir "$(cd_portageq "${CD_TARGET_DIR}" envvar DISTDIR)" || cd_die
+    wrapper_unmap_dir "$(cd_portageq "${CD_TARGET_DIR}" envvar PORTAGE_TMPDIR)" || cd_die
+    wrapper_unmap_dir "$(cd_portageq "${CD_TARGET_DIR}" get_repo_path / gentoo)" || cd_die
     eend 0
 
     ebegin "Unmounting overlayfs"

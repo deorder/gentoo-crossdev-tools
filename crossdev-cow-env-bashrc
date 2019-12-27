@@ -2,4 +2,10 @@
 
 . /etc/profile
 
+ldconfig
+
 export PS1="\[\033[01;33m\][${CD_TARGET}] ${PS1}"
+
+if (( ${#} )); then
+"$@"
+fi

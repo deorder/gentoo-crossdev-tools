@@ -14,6 +14,9 @@ cd_parse_arguments() {
       *-cd-debug)
       CD_DEBUG=1
       ;;
+      *-cd-quiet)
+      CD_QUIET=1
+      ;;
       *-cd-target)
       shift; CD_TARGET="${1}"
       ;;
@@ -71,6 +74,9 @@ cd_parse_arguments() {
   if [ -z "${CD_HELP}" ]; then
     if [ -z "${CD_DEBUG}" ]; then
       CD_NODEBUG=" "
+    fi
+    if [ ! -z "${CD_QUIET}" ]; then
+      export EINFO_QUIET=1
     fi
     if [ -z "${CD_PREFIX_DIR}" ]; then
       CD_PREFIX_DIR=""

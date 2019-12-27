@@ -19,17 +19,22 @@ fi
 
 export CD_COW_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
 export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
-export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
+export CD_COW_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
 
 if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-chroot-pre" ]; then
   source "${CD_CONFIG_DIR}/crossdev-cow-env-chroot-pre" || cd_die
 fi
 
+if ! cd_is_mount "${CD_UNION_DIR}"; then
+CD_QUIET=1 "${CD_SCRIPT_DIR}/crossdev-cow-env-init" "${CD_ARGS[@]}" || cd_die
+fi
+
 if cd_is_mount "${CD_UNION_DIR}"; then
+  export SANDBOX_WRITE=${SANDBOX_WRITE}:${CD_TARGET_DIR%/}
   if (( ${#CD_ARGS[@]} )); then
-    chroot "${CD_UNION_DIR}" /usr/bin/env -C "${CD_CUR_DIR}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 "${CD_ARGS[@]}" || cd_die
+    chroot "${CD_UNION_DIR}" /usr/bin/env -u ROOT -u PORTAGE_CONFIGROOT -C "${CD_CUR_DIR}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 /bin/bash /profile "${CD_ARGS[@]}" || cd_die
   else
-    chroot "${CD_UNION_DIR}" /usr/bin/env -C "${CD_CUR_DIR}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 CD_COW_ENV_CHROOT_ENTER=1 /bin/bash --rcfile "/profile" || cd_die
+    chroot "${CD_UNION_DIR}" /usr/bin/env -u ROOT -u PORTAGE_CONFIGROOT -C "${CD_CUR_DIR}" CD_CHROOT_ENV=1 CD_COW_ENV_CHROOT=1 CD_COW_ENV_CHROOT_ENTER=1 /bin/bash --rcfile "/profile" || cd_die
   fi
 else
   eerror "Union prefix dir ${CD_UNION_DIR} does not exist, cannot chroot"
