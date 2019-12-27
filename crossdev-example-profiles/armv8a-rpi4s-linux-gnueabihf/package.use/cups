@@ -1,0 +1,3 @@
+net-print/cups -ssl
+app-text/ghostscript-gpl cups
+net-print/gutenprint foomaticdb ppds

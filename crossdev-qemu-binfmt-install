@@ -76,7 +76,8 @@ case ${CD_USE_RPI} in
   ;;
   *4*)
   CD_QEMU_ARGS+=("-cpu")
-  CD_QEMU_ARGS+=("cortex-a72")
+  #CD_QEMU_ARGS+=("cortex-a72")
+  CD_QEMU_ARGS+=("any")
   ;;
 esac
 

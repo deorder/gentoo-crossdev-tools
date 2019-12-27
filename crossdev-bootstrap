@@ -121,7 +121,7 @@ CD_CROSSDEV_EMERGE_ARGS+=("virtual/libc")
 if [ "${CD_USE_LIBC}" == "musl" ]; then
   if [ ! -z "${CD_LIBC_VER}" ]; then
     einfo "Using musl version: ${CD_LIBC_VER}";
-    CD_CROSSDEV_EMERGE_ARGS+=("sys-libs/musl-${CD_LIBC_VER}")
+    CD_CROSSDEV_EMERGE_ARGS+=("=sys-libs/musl-${CD_LIBC_VER}")
   else
     CD_LIBC_VER=$(cd_get_package_version_by_atom "${CD_GET_PACKAGE_DIR}" "%{PVR}" "sys-libs/musl")
     if [ ! -z "${CD_LIBC_VER}" ]; then

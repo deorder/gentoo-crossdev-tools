@@ -1,0 +1,4 @@
+media-libs/gst-plugins-base X gles2
+media-plugins/gst-plugins-vaapi X gles2
+media-libs/gst-plugins-bad X gles2 opengl
+media-plugins/gst-plugins-meta X 
