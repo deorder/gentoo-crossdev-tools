@@ -10,6 +10,7 @@ if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   exit 1
 fi
+export CD_OVERLAY_DIR=${CD_SCRIPT_DIR}/overlays
 
 export CD_COW_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
 export CD_WORK_DIR=${CD_TMP_DIR}/work-${CD_TARGET}
@@ -55,8 +56,8 @@ if ! cd_is_mount "${CD_UNION_DIR}"; then
   chmod ${CD_NODEBUG:--v} 755 "${CD_COW_WRAPPER_DIR}"/profile || cd_die
   eend 0
 
-  ebegin "Mounting overlayfs"
-  mount -t overlay overlay -o lowerdir="${CD_COW_WRAPPER_DIR}":"${CD_TARGET_DIR}",upperdir="${CD_COW_DIR}",workdir="${CD_WORK_DIR}" "${CD_UNION_DIR}" || cd_die
+  ebegin "Mounting union filesystem"
+  mount -t overlay overlay -o lowerdir="${CD_COW_WRAPPER_DIR}":"${CD_OVERLAY_DIR}":"${CD_TARGET_DIR}",upperdir="${CD_COW_DIR}",workdir="${CD_WORK_DIR}" "${CD_UNION_DIR}" || cd_die
   eend 0
 
   ebegin "Binding host/target mappings"
@@ -73,7 +74,13 @@ if ! cd_is_mount "${CD_UNION_DIR}"; then
     source "${CD_CONFIG_DIR}/crossdev-cow-env-init-post" || cd_die
     eend 0
   fi
-   
+
+  ebegin "Binding overlays"
+  mkdir -p ${CD_NODEBUG:--v} "${CD_COW_DIR}/etc/portage"
+  mkdir -p ${CD_NODEBUG:--v} "${CD_WORK_DIR}/etc/portage"
+  mount -t overlay overlay -o lowerdir="${CD_UNION_DIR}/etc/portage":"${CD_OVERLAY_DIR}/etc/portage",upperdir="${CD_COW_DIR}/etc/portage",workdir="${CD_WORK_DIR}/etc/portage" "${CD_UNION_DIR}/etc/portage" || cd_die
+  eend 0
+
 else
   eerror "Cow environment already mounted, cannot initialize"
 fi

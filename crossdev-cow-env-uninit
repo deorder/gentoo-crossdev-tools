@@ -25,6 +25,10 @@ function wrapper_unmap_dir() {
 if [ -d ${CD_UNION_DIR} ]; then
   if cd_is_mount ${CD_UNION_DIR}; then
 
+    ebegin "Unbinding overlays"
+    umount "${CD_UNION_DIR}/etc/portage" || cd_die
+    eend 0
+
     if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" ]; then
       ebegin "Executing crossdev cow env uninit pre hook"
       source "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" || cd_die
@@ -44,7 +48,7 @@ if [ -d ${CD_UNION_DIR} ]; then
     wrapper_unmap_dir "$(cd_portageq "${CD_TARGET_DIR}" get_repo_path / gentoo)" || cd_die
     eend 0
 
-    ebegin "Unmounting overlayfs"
+    ebegin "Unmounting union filesystem"
     umount ${CD_NODEBUG:--v} "${CD_UNION_DIR}" || cd_die
     eend 0
 

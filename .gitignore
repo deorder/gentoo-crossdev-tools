@@ -1,1 +1,4 @@
-crossdev-template
+*.org
+*.org
+*.old
+*.bak

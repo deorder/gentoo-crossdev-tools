@@ -75,6 +75,49 @@ mkdir -p ${CD_NODEBUG:--v} "${CD_WRAPPER_INSTALL_DIR}/lib/pkgconfig"
 mkdir -p ${CD_NODEBUG:--v} "${CD_WRAPPER_INSTALL_DIR}/lib64"
 mkdir -p ${CD_NODEBUG:--v} "${CD_WRAPPER_INSTALL_DIR}/lib64/pkgconfig"
 
+for CD_TOOL in libtool; do
+
+  CD_TOOL_FROM_PATH="/usr/${CD_TARGET}/usr/bin/${CD_TOOL}"
+  CD_TOOL_TO_PATH="${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TOOL}"
+
+  if [ -f "${CD_TOOL_FROM_PATH}" ]; then
+    ebegin "Linking ${CD_TOOL}"
+    ln -fs ${CD_NODEBUG:--v} "${CD_TOOL_FROM_PATH}" "${CD_TOOL_TO_PATH}" || cd_die
+    eend 0
+  fi
+
+done
+
+for CD_TOOL in g-ir-generate g-ir-compiler; do
+ebegin "Generating wrapper for ${CD_TOOL}"
+cat << EOF > "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TOOL}"
+#!/bin/bash
+ARGS=("\$@")
+for ((index=0; index<"\${#ARGS[@]}"; ++index)); do
+FILTER=\${ARGS[index]}
+FILTER_SRC='-I/usr/include'
+FILTER_DST='-I${CD_TARGET_DIR}/usr/include'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/lib'
+FILTER_DST='-L${CD_TARGET_DIR}/lib'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/lib64'
+FILTER_DST='-L${CD_TARGET_DIR}/lib64'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/usr/lib'
+FILTER_DST='-L${CD_TARGET_DIR}/usr/lib'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+FILTER_SRC='-L/usr/lib64'
+FILTER_DST='-L${CD_TARGET_DIR}/usr/lib64'
+FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
+ARGS[index]=\${FILTER}
+done
+export PATH="${CD_ORG_PATH}"
+exec "${CD_SCRIPT_DIR}/crossdev-cow-env-chroot" "${CD_TOOL}" "\${ARGS[@]}"
+EOF
+eend 0
+done
+
 for CD_TOOL in cc gcc cpp g++ c++ clang clang++; do
 
   CD_HOST_TOOL_ARGS=()
@@ -184,19 +227,6 @@ EOF
     chmod ${CD_NODEBUG:--v} 755 "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TARGET}-${CD_TOOL}" || cd_die
     eend 0
 
-  fi
-
-done
-
-for CD_TOOL in libtool; do
-
-  CD_TOOL_FROM_PATH="/usr/${CD_TARGET}/usr/bin/${CD_TOOL}"
-  CD_TOOL_TO_PATH="${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TOOL}"
-
-  if [ -f "${CD_TOOL_FROM_PATH}" ]; then
-    ebegin "Linking ${CD_TOOL}"
-    ln -fs ${CD_NODEBUG:--v} "${CD_TOOL_FROM_PATH}" "${CD_TOOL_TO_PATH}" || cd_die
-    eend 0
   fi
 
 done

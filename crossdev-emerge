@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CD_UNION_ARGS=()
 CD_EMERGE_ARGS=()
 CD_WRAPPER_ARGS=()
 
@@ -37,6 +38,7 @@ if [ ! -z "${CD_HELP}" ]; then
   exit 1
 fi
 
+export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
 export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-${CD_TARGET}
 
 if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-pre" ]; then
@@ -52,6 +54,12 @@ fi
 
 if [ ! -z "${CD_COW_ENV_CHROOT}" ]; then
   export FEATURES="-sandbox -usersandbox -userpriv ${FEATURES}"
+fi
+
+if ! cd_is_mount "${CD_UNION_DIR}"; then
+ebegin "Creating union environment"
+"${CD_SCRIPT_DIR}/crossdev-cow-env-init" "${CD_UNION_ARGS[@]}" || cd_die
+eend 0
 fi
 
 ebegin "Creating wrapper environment"
