@@ -1,0 +1,100 @@
+#!/bin/bash
+
+CD_CHROOT_ARGS=()
+CD_CHROOT_ENTER_ARGS=()
+
+CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+source "${CD_CUR_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+cd_parse_extra_arguments() {
+
+  while (( ${#1} )); do
+    case ${1} in
+      *-cd-chroot-dir)
+      shift; CD_CHROOT_DIR="${1}"
+      ;;
+      *-cd-chroot-dir=*)
+      CD_CHROOT_DIR="${1#*=}"
+      ;;
+      --)
+      shift;
+      while (( ${#@} )); do
+        CD_CHROOT_ENTER_ARGS+=(${1})
+        shift
+      done
+      break
+      ;;
+      *)
+      CD_CHROOT_ENTER_ARGS+=(${1})
+      ;;
+    esac
+    shift
+  done
+
+  if [ -z "${CD_CHROOT_DIR}" ]; then
+    export CD_CHROOT_DIR=${CD_TMP_DIR}/chroot-${CD_TARGET}
+  fi
+
+}
+
+cd_parse_extra_arguments "${CD_ARGS[@]}"
+
+if [ ! -z "${CD_HELP}" ]; then
+  cd_print_usage_header
+  echo "--cd-chroot-dir <dir> (Environment dir) (${CD_CHROOT_DIR}}"
+  exit 1
+fi
+
+if [ ! -e "${CD_TARGET}/${PWD}" ]; then
+  export CD_CUR_DIR="/"
+else
+  export CD_CUR_DIR=${PWD}
+fi
+
+export CD_CHROOT_COW_DIR=${CD_CHROOT_DIR}/cow
+export CD_CHROOT_WORK_DIR=${CD_CHROOT_DIR}/work
+export CD_CHROOT_UNION_DIR=${CD_CHROOT_DIR}/union
+export CD_CHROOT_OVERLAY_DIR=${CD_CHROOT_DIR}/overlay
+
+if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-enter-pre" ]; then
+  source "${CD_CONFIG_DIR}/crossdev-chroot-env-enter-pre" || cd_die
+fi
+
+if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
+"${CD_SCRIPT_DIR}/crossdev-chroot-env-init" "${CD_CHROOT_ENTER_ARGS[@]}" || cd_die
+fi
+
+if cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
+  CD_CHROOT_ARGS+=("-u ROOT")
+  CD_CHROOT_ARGS+=("-u SYSROOT")
+  CD_CHROOT_ARGS+=("-u CD_TARGET")
+  CD_CHROOT_ARGS+=("-u CD_CHROOT_DIR")
+  CD_CHROOT_ARGS+=("-u CD_CUR_DIR")
+  CD_CHROOT_ARGS+=("-u CD_PREFIX_DIR")
+  CD_CHROOT_ARGS+=("-u CD_TARGET_DIR")
+  CD_CHROOT_ARGS+=("-u PORTAGE_CONFIGROOT")
+
+  CD_CHROOT_ARGS+=("CD_CHROOT_ENV=1")
+  
+  if [ "${CD_HOST}" != "${CD_TARGET}" ]; then
+    CD_CHROOT_ARGS+=("CD_HOST_DIR=/")
+    CD_CHROOT_ARGS+=("CD_HOST=${CD_TARGET}")
+  fi
+
+  export SANDBOX_WRITE=${SANDBOX_WRITE}:${CD_CHROOT_DIR%/}
+
+  if (( ${#CD_CHROOT_ENTER_ARGS[@]} )); then
+    chroot "${CD_CHROOT_UNION_DIR}" /usr/bin/env ${CD_CHROOT_ARGS[@]} /bin/bash /profile "${CD_CHROOT_ENTER_ARGS[@]}" || cd_die
+  else
+    chroot "${CD_CHROOT_UNION_DIR}" /usr/bin/env ${CD_CHROOT_ARGS[@]} CD_CHROOT_ENV_ENTER=1 /bin/bash --rcfile "/profile" || cd_die
+  fi
+else
+  eerror "Union prefix dir ${CD_CHROOT_UNION_DIR} does not exist, cannot chroot"
+fi
+
+if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-enter-post" ]; then
+  source "${CD_CONFIG_DIR}/crossdev-chroot-env-enter-post" || cd_die
+fi

@@ -19,5 +19,5 @@ src_prepare() {
 src_compile() {
   emake \
     INTROSPECTION_COMPILER="env PATH=.libs:\$(PATH) ${CD_SCRIPT_DIR}/crossdev-cow-env-chroot ${S}/g-ir-compiler" \
-    INTROSPECTION_SCANNER="env PATH=.libs:\$(PATH) LPATH=.libs CC=\$(CC) PKG_CONFIG=${CHOST}-pkg-config PYTHONPATH=${S} UNINSTALLED_INTROSPECTION_SRCDIR=${S} UNINSTALLED_INTROSPECTION_BUILDDIR=${S} ${CD_SCRIPT_DIR}/crossdev-cow-env-chroot ${S}/g-ir-scanner"
+    INTROSPECTION_SCANNER="env PATH=.libs:\$(PATH) LPATH=.libs CC=\$(CC) PKG_CONFIG=${CHOST}-pkg-config PYTHONPATH=${S} UNINSTALLED_INTROSPECTION_SRCDIR=${S} UNINSTALLED_INTROSPECTION_BUILDDIR=${S} ${CD_SCRIPT_DIR}/crossdev-chroot-env-run ${S}/g-ir-scanner"
 }

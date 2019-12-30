@@ -1,0 +1,147 @@
+#!/bin/bash
+
+CD_COW_UNINIT_ARGS=()
+
+CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+source "${CD_CUR_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+cd_parse_extra_arguments() {
+
+  while (( ${#1} )); do
+    case ${1} in
+      *-cd-chroot-dir)
+      shift; CD_CHROOT_DIR="${1}"
+      ;;
+      *-cd-chroot-dir=*)
+      CD_CHROOT_DIR="${1#*=}"
+      ;;
+      --)
+      shift;
+      while (( ${#@} )); do
+        CD_COW_UNINIT_ARGS+=(${1})
+        shift
+      done
+      break
+      ;;
+      *)
+      CD_COW_UNINIT_ARGS+=(${1})
+      ;;
+    esac
+    shift
+  done
+
+  if [ -z "${CD_CHROOT_DIR}" ]; then
+    export CD_CHROOT_DIR=${CD_TMP_DIR}/chroot-${CD_TARGET}
+  fi
+
+}
+
+cd_parse_extra_arguments "${CD_ARGS[@]}"
+
+if [ ! -z "${CD_HELP}" ]; then
+  cd_print_usage_header
+  echo "--cd-chroot-dir <dir> (Environment dir) (${CD_CHROOT_DIR}}"
+  exit 1
+fi
+
+export CD_CHROOT_COW_DIR=${CD_CHROOT_DIR}/cow
+export CD_CHROOT_WORK_DIR=${CD_CHROOT_DIR}/work
+export CD_CHROOT_UNION_DIR=${CD_CHROOT_DIR}/union
+export CD_CHROOT_OVERLAY_DIR=${CD_CHROOT_DIR}/overlay
+
+function unbind_dir() {
+  local name=${1} destination=${2}
+  if [ -e "${CD_CHROOT_DIR}/${destination}" ]; then
+    if cd_is_mount "${CD_CHROOT_DIR}/${destination}"; then
+      umount ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}/${destination}" || cd_die
+    fi
+  fi
+}
+
+function unmap_dir() {
+  local name=${1} destination=${2}
+  if [ -e "${CD_CHROOT_DIR}/${destination}" ]; then
+    if cd_is_mount_of_type "${CD_CHROOT_DIR}/${destination}" "overlay"; then
+      umount ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}/${destination}" || cd_die
+    fi
+  fi
+}
+
+if [ -d ${CD_CHROOT_UNION_DIR} ]; then
+  if cd_is_mount ${CD_CHROOT_UNION_DIR}; then
+
+    if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-pre" ]; then
+      ebegin "Executing crossdev chroot env uninit pre hook"
+      source "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-pre" || cd_die
+      eend 0
+    fi
+
+    ebegin "Uninitializing chroot environment"
+
+    ebegin "Killing all remaining processes"
+    fuser -Mk ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}"
+    eend 0
+
+    ebegin "Unbinding host/target mappings"
+
+    ebegin "Unbind host root dir"
+    unbind_dir "host" "/host" || cd_die
+    eend 0
+
+    ebegin "Unbind portage package dir"
+    unmap_dir "portage-pkgdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" || cd_die
+    eend 0
+
+    ebegin "Unbind portage dist dir"
+    unbind_dir "portage-distdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar DISTDIR)" || cd_die
+    eend 0
+
+    while read -d '@' REPOSITORY; do
+      LOCATION=$(echo "${REPOSITORY}" | grep "location" | cut -d'=' -f2 | tr -d " ")
+      NAME=$(echo "${REPOSITORY}" | head -1 | sed 's/\[\(.*\)\]/\1/g' | tr '[:upper:]' '[:lower:]')
+      ebegin "Unbind portage repository: ${NAME}"
+      unmap_dir "repository-${NAME}" "${CD_CHROOT_UNION_DIR}/${LOCATION}" || cd_die
+      eend 0
+    done < <( portageq repos_config / | awk -v RS='\n\n' '{ printf "%s@" , $0 }' )
+
+    ebegin "Unbind portage temp dir"
+    unbind_dir "portage-tmpdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_TMPDIR)/portage" || cd_die
+    eend 0
+
+    ebegin "Unbind portage config dir"
+    unmap_dir "portage-cfgdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" || cd_die
+    eend 0
+
+    eend 0
+    
+    if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-unmount" ]; then
+      ebegin "Executing crossdev chroot env uninit unmount hook"
+      source "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-unmount" || cd_die
+      eend 0
+    fi
+
+    ebegin "Unmounting union filesystem"
+    umount ${CD_NODEBUG:--v} -R "${CD_CHROOT_UNION_DIR}" || cd_die
+    eend 0
+
+    ebegin "Unmounting environment filesystem"
+    umount ${CD_NODEBUG:--v} -R "${CD_CHROOT_DIR}" || cd_die
+    eend 0
+
+    eend 0
+
+    if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-post" ]; then
+      ebegin "Executing crossdev chroot env uninit post hook"
+      source "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-post" || cd_die
+      eend 0
+    fi
+
+  else
+    eerror "Cow environment not mounted, cannot uninitialize"
+  fi
+else
+  eerror "Not a directory, cannot uninitialize"
+fi

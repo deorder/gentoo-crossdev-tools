@@ -1,0 +1,221 @@
+#!/bin/bash
+
+CD_CHROOT_INIT_ARGS=()
+
+CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+source "${CD_CUR_DIR}/crossdev-functions.sh"
+
+cd_parse_arguments $@
+
+cd_parse_extra_arguments() {
+
+  while (( ${#1} )); do
+    case ${1} in
+      *-cd-source-dir)
+      shift; CD_SOURCE_DIR="${1}"
+      ;;
+      *-cd-source-dir=*)
+      CD_SOURCE_DIR="${1#*=}"
+      ;;
+      *-cd-chroot-dir)
+      shift; CD_CHROOT_DIR="${1}"
+      ;;
+      *-cd-chroot-dir=*)
+      CD_CHROOT_DIR="${1#*=}"
+      ;;
+      --)
+      shift;
+      while (( ${#@} )); do
+        CD_CHROOT_INIT_ARGS+=(${1})
+        shift
+      done
+      break
+      ;;
+      *)
+      CD_CHROOT_INIT_ARGS+=(${1})
+      ;;
+    esac
+    shift
+  done
+
+  if [ -z "${CD_SOURCE_DIR}" ]; then
+    export CD_SOURCE_DIR="${CD_TARGET_DIR}"
+  fi
+
+  if [ -z "${CD_CHROOT_DIR}" ]; then
+    export CD_CHROOT_DIR=${CD_TMP_DIR}/chroot-${CD_TARGET}
+  fi
+
+}
+
+cd_parse_extra_arguments "${CD_ARGS[@]}"
+
+if [ ! -z "${CD_HELP}" ]; then
+  cd_print_usage_header
+  echo "--cd-source-dir <dir> (Source dir) (${CD_SOURCE_DIR}}"
+  echo "--cd-chroot-dir <dir> (Environment dir) (${CD_CHROOT_DIR}}"
+  exit 1
+fi
+
+export CD_CHROOT_COW_DIR=${CD_CHROOT_DIR}/cow
+export CD_CHROOT_WORK_DIR=${CD_CHROOT_DIR}/work
+export CD_CHROOT_UNION_DIR=${CD_CHROOT_DIR}/union
+export CD_CHROOT_OVERLAY_DIR=${CD_CHROOT_DIR}/overlay
+
+export CD_OVERLAY_TEMPLATES_DIR=${CD_SCRIPT_DIR}/overlay_templates
+export CD_USER_OVERLAY_TEMPLATES_DIR=${CD_CONFIG_DIR}/overlay_templates
+
+function bind_dir() {
+  local name=${1} source=${2} destination=${2} permission=${4}
+  if [ -e "${source}" ]; then
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_OVERLAY_DIR}/${destination}" || cd_die
+    if ! cd_is_mount "${CD_CHROOT_UNION_DIR}/${destination}"; then
+      mount ${CD_NODEBUG:--v} -o ${permission},bind "${source}" "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+    fi
+  fi
+}
+
+function map_dir() {
+  local name=${1} source=${2} destination=${2} permission=${4}
+  if [ -e "${source}" ]; then
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_OVERLAY_DIR}/${destination}" || cd_die
+    if ! cd_is_mount_of_type "${CD_CHROOT_UNION_DIR}/${destination}" "overlay"; then
+      if [ "${permission}" = "rw" ]; then
+        mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}"/cow-${name} || cd_die
+        mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}"/work-${name} || cd_die
+      fi
+      if [ "${permission}" = "ro" ]; then
+        mount ${CD_NODEBUG:--v} -t overlay overlay-${name} -o ${permission},lowerdir="${source}":"${CD_CHROOT_OVERLAY_DIR}/${destination}" "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+      else
+        mount ${CD_NODEBUG:--v} -t overlay overlay-${name} -o ${permission},lowerdir="${source}":"${CD_CHROOT_OVERLAY_DIR}/${destination}",upperdir="${CD_CHROOT_DIR}"/cow-${name},workdir="${CD_CHROOT_DIR}"/work-${name} "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+      fi
+    fi
+  fi
+}
+ 
+if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
+
+  if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-init-pre" ]; then
+    ebegin "Executing crossdev chroot env init pre hook"
+    source "${CD_CONFIG_DIR}/crossdev-chroot-env-init-pre" || cd_die
+    eend 0
+  fi
+
+  ebegin "Initializing chroot environment"
+
+  ebegin "Creating environment directory"
+  mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}" || cd_die
+  eend 0
+
+  ebegin "Mounting environment filesystem"
+  mount ${CD_NODEBUG:--v} -t tmpfs -o rw chroot-${CD_TARGET} "${CD_CHROOT_DIR}" || cd_die
+  eend 0
+
+  ebegin "Creating environment subdirectories"
+  mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_COW_DIR}" || cd_die
+  mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_WORK_DIR}" || cd_die
+  mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}" || cd_die
+  mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+  eend 0
+
+  ebegin "Initializing overlay directory"
+  if [ -d "${CD_OVERLAY_TEMPLATES_DIR}/all" ]; then
+    ebegin "Copying overlay template for all"
+    cp -a ${CD_NODEBUG:--v} "${CD_OVERLAY_TEMPLATES_DIR}/all"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+    eend 0
+  fi
+  if [ -d "${CD_USER_OVERLAY_TEMPLATES_DIR}/all" ]; then
+    ebegin "Copying user overlay template for all"
+    cp -a ${CD_NODEBUG:--v} "${CD_USER_OVERLAY_TEMPLATES_DIR}/all"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+    eend 0
+  fi
+  if [ "${CD_TARGET}" = "${CD_HOST}" ]; then
+    if [ -d "${CD_OVERLAY_TEMPLATES_DIR}/host" ]; then
+      ebegin "Copying overlay template for host"
+      cp -a ${CD_NODEBUG:--v} "${CD_OVERLAY_TEMPLATES_DIR}/host"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+      eend 0
+    fi
+    if [ -d "${CD_USER_OVERLAY_TEMPLATES_DIR}/host" ]; then
+      ebegin "Copying user overlay template for host"
+      cp -a ${CD_NODEBUG:--v} "${CD_USER_OVERLAY_TEMPLATES_DIR}/host"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+      eend 0
+    fi
+  else
+    if [ -d "${CD_OVERLAY_TEMPLATES_DIR}/target" ]; then
+      ebegin "Copying overlay template for target"
+      cp -a ${CD_NODEBUG:--v} "${CD_OVERLAY_TEMPLATES_DIR}/target"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+      eend 0
+    fi
+    if [ -d "${CD_USER_OVERLAY_TEMPLATES_DIR}/target" ]; then
+      ebegin "Copying user overlay template for target"
+      cp -a ${CD_NODEBUG:--v} "${CD_USER_OVERLAY_TEMPLATES_DIR}/target"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+      eend 0
+    fi
+  fi
+  if [ -d "${CD_OVERLAY_TEMPLATES_DIR}/${CD_TARGET}" ]; then
+    ebegin "Copying overlay template for ${CD_TARGET}"
+    cp -a ${CD_NODEBUG:--v} "${CD_OVERLAY_TEMPLATES_DIR}/${CD_TARGET}"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+    eend 0
+  fi
+  if [ -d "${CD_USER_OVERLAY_TEMPLATES_DIR}/${CD_TARGET}" ]; then
+    ebegin "Copying yser overlay template for ${CD_TARGET}"
+    cp -a ${CD_NODEBUG:--v} "${CD_USER_OVERLAY_TEMPLATES_DIR}/${CD_TARGET}"/* "${CD_CHROOT_OVERLAY_DIR}" || cd_die
+    eend 0
+  fi
+  eend 0
+
+  ebegin "Mounting union filesystem"
+  mount ${CD_NODEBUG:--v} -t overlay overlay -o lowerdir="${CD_SOURCE_DIR}":"${CD_CHROOT_OVERLAY_DIR}",upperdir="${CD_CHROOT_COW_DIR}",workdir="${CD_CHROOT_WORK_DIR}" "${CD_CHROOT_UNION_DIR}" || cd_die
+  eend 0
+
+  if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-init-mount" ]; then
+    ebegin "Executing crossdev chroot env init mount hook"
+    source "${CD_CONFIG_DIR}/crossdev-chroot-env-init-mount" || cd_die
+    eend 0
+  fi
+
+  ebegin "Binding host/target mappings"
+
+  ebegin "Bind portage config dir (rw)"
+  map_dir "portage-cfgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
+  eend 0
+
+  ebegin "Bind portage temp dir (rw)"
+  mkdir -p ${CD_NODEBUG:--v} "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_TMPDIR)/portage" || cd_die
+  bind_dir "portage-tmpdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_TMPDIR)/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_TMPDIR)/portage" rw || cd_die
+  eend 0
+
+  while read -d '@' REPOSITORY; do
+    LOCATION=$(echo "${REPOSITORY}" | grep "location" | cut -d'=' -f2 | tr -d " ")
+    NAME=$(echo "${REPOSITORY}" | head -1 | sed 's/\[\(.*\)\]/\1/g' | tr '[:upper:]' '[:lower:]')
+    ebegin "Bind portage repository: ${NAME} (ro)"
+    map_dir "repository-${NAME}" "${LOCATION}" "${CD_CHROOT_UNION_DIR}/${LOCATION}" ro || cd_die
+    eend 0
+  done < <( portageq repos_config / | awk -v RS='\n\n' '{ printf "%s@" , $0 }' )
+
+  ebegin "Bind portage dist dir (rw)"
+  bind_dir "portage-distdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar DISTDIR)" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar DISTDIR)" rw || cd_die
+  eend 0
+
+  ebegin "Bind portage package dir (rw)"
+  map_dir "portage-pkgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PKGDIR)" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" rw || cd_die
+  eend 0
+
+  ebegin "Bind host root dir (ro)"
+  bind_dir "host" "${CD_PREFIX_DIR}/" "/host" ro || cd_die
+  eend 0
+
+  eend 0
+
+  if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-init-post" ]; then
+    ebegin "Executing crossdev chroot env init post hook"
+    source "${CD_CONFIG_DIR}/crossdev-chroot-env-init-post" || cd_die
+    eend 0
+  fi
+
+else
+  eerror "Cow environment already mounted, cannot initialize"
+fi

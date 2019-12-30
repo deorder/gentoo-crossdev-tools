@@ -1,4 +1,6 @@
-*.org
+old
+org
+bak
 *.org
 *.old
 *.bak
