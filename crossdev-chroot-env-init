@@ -184,13 +184,14 @@ if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
   ebegin "Binding host/target mappings"
 
   source_portage_cfgdir=$(cd_portageq "${CD_SOURCE_DIR}" envvar PORTAGE_CONFIGROOT)
+  prefix_portage_cfgdir=$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_CONFIGROOT)
   if [ -z "${source_portage_cfgdir}" ]; then
     ebegin "Bind portage config dir (rw) (prefix)" 
-    map_dir "portage-cfgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
+    map_dir "portage-cfgdir" "${CD_PREFIX_DIR}/${prefix_portage_cfgdir}/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
     eend 0
   else
     ebegin "Bind portage config dir (rw) (source)"
-    map_dir "portage-cfgdir" "${source_portage_cfgdir}/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
+    map_dir "portage-cfgdir" "${CD_SOURCE_DIR}/${source_portage_cfgdir}/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
     eend 0
   fi
 
@@ -212,9 +213,10 @@ if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
   eend 0
 
   source_portage_pkgdir=$(cd_portageq "${CD_SOURCE_DIR}" envvar PKGDIR)
+  prefix_portage_pkgdir=$(cd_portageq "${CD_PREFIX_DIR}" envvar PKGDIR)
   if [ -z "${source_portage_pkgdir}" ]; then
     ebegin "Bind portage package dir (rw) (prefix)"
-    map_dir "portage-pkgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PKGDIR)" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" rw || cd_die
+    map_dir "portage-pkgdir" "${CD_PREFIX_DIR}/${prefix_portage_pkgdir}" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" rw || cd_die
     eend 0
   else
     ebegin "Bind portage package dir (rw) (source)"
