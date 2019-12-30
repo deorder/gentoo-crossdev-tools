@@ -49,6 +49,8 @@ if [ ! -z "${CD_HELP}" ]; then
   exit 1
 fi
 
+CD_TARGET_WRAPPER_DIR=${CD_WRAPPER_DIR}
+
 CD_TARGET_ENV_DIR=${CD_TMP_DIR}/env-${CD_TARGET}
 CD_TARGET_ENV_UNION_DIR=${CD_TARGET_ENV_DIR}/union-${CD_TARGET}
   
@@ -79,7 +81,7 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-pre" ]; then
 fi
 
 ebegin "Creating wrapper environment"
-"${CD_SCRIPT_DIR}/crossdev-wrapper-env-create" "${CD_WRAPPER_ARGS[@]}" || cd_die
+"${CD_SCRIPT_DIR}/crossdev-wrapper-env-create" --cd-target-dir "${CD_TARGET_ENV_UNION_DIR}" "${CD_WRAPPER_ARGS[@]}" || cd_die
 eend 0
 
 #if ! cd_is_mount "${CD_HOST_ENV_UNION_DIR}"; then
@@ -101,8 +103,8 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-mount" ]; then
 fi
 
 ebegin "Starting real emerge with: ${CD_EMERGE_ARGS[*]}"
-cd_export_env_vars "${CD_TARGET}" "${CD_TARGET_DIR}" "${CD_WRAPPER_DIR}"
-${CD_TARGET}-emerge --config-root="${CD_TARGET_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
+cd_export_env_vars "${CD_TARGET}" "${CD_TARGET_ENV_UNION_DIR}" "${CD_TARGET_WRAPPER_DIR}"
+${CD_TARGET}-emerge --config-root="${CD_TARGET_ENV_UNION_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
 # "${CD_SCRIPT_DIR}/crossdev-cow-env-chroot" --cd-target ${CD_HOST} --cd-chroot-target-dir "${CD_CHROOT_TARGET_DIR}" --cd-chroot-wrapper-dir "${CD_CHROOT_WRAPPER_DIR}" --cd-env-dir "${CD_HOST_ENV_DIR}" ${CD_TARGET}-emerge --config-root="${CD_CHROOT_TARGET_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
 eend 0
 

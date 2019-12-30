@@ -92,7 +92,6 @@ if [ -d ${CD_ENV_UNION_DIR} ]; then
     ebegin "Unbinding host/target mappings"
     unbind_wrapper_map_dir "/host" || cd_die
     unbind_wrapper_map_dir "${CD_TMP_DIR}" || cd_die
-    unbind_wrapper_map_dir "${CD_SCRIPT_DIR}" || cd_die
     unbind_wrapper_map_dir "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar DISTDIR)" || cd_die
     unbind_wrapper_map_dir "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar PORTAGE_TMPDIR)" || cd_die
     unbind_wrapper_map_dir "$(cd_portageq "${CD_ENV_UNION_DIR}" get_repo_path / gentoo)" || cd_die

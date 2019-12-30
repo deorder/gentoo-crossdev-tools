@@ -217,6 +217,7 @@ FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
 ARGS[index]=\${FILTER}
 done
 export PATH="${CD_ORG_PATH}"
+echo "${CD_TARGET_TOOL_PATH}" ${CD_TARGET_TOOL_ARGS[@]} "\${ARGS[@]}" >> /tmp/out
 exec "${CD_TARGET_TOOL_PATH}" ${CD_TARGET_TOOL_ARGS[@]} "\${ARGS[@]}"
 EOF
 

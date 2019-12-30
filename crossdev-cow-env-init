@@ -67,12 +67,12 @@ export CD_OVERLAY_TEMPLATES_DIR=${CD_SCRIPT_DIR}/overlay_templates
 export CD_USER_OVERLAY_TEMPLATES_DIR=${CD_CONFIG_DIR}/overlay_templates
 
 function bind_wrapper_map_dir() {
-  local source=${1} dest=${2}
+  local source=${1} dest=${2} permission=${3}
   mkdir -p ${CD_NODEBUG:--v} "${CD_ENV_OVERLAY_DIR}/${dest}" || cd_die
   if [ -e "${source}" ]; then
     if ! cd_is_mount "${CD_ENV_UNION_DIR}/${dest}"; then
       ebegin "Bind map dir: ${dest}"
-      mount ${CD_NODEBUG:--v} -o rw,bind "${source}" "${CD_ENV_UNION_DIR}/${dest}" || cd_die
+      mount ${CD_NODEBUG:--v} -o ${permission},bind "${source}" "${CD_ENV_UNION_DIR}/${dest}" || cd_die
       eend 0
     fi
   fi
@@ -173,12 +173,11 @@ if ! cd_is_mount "${CD_ENV_UNION_DIR}"; then
   fi
 
   ebegin "Binding host/target mappings"
-  bind_wrapper_map_dir "$(cd_portageq "${CD_PREFIX_DIR}" get_repo_path / gentoo)" "$(cd_portageq "${CD_ENV_UNION_DIR}" get_repo_path / gentoo)" || cd_die
-  bind_wrapper_map_dir "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_TMPDIR)" "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar PORTAGE_TMPDIR)" || cd_die
-  bind_wrapper_map_dir "$(cd_portageq "${CD_PREFIX_DIR}" envvar DISTDIR)" "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar DISTDIR)" || cd_die
-  bind_wrapper_map_dir "${CD_SCRIPT_DIR}/" "${CD_SCRIPT_DIR}" || cd_die
-  bind_wrapper_map_dir "${CD_TMP_DIR}/" "${CD_TMP_DIR}" || cd_die
-  bind_wrapper_map_dir "${CD_PREFIX_DIR}/" "/host" || cd_die
+  bind_wrapper_map_dir "$(cd_portageq "${CD_PREFIX_DIR}" get_repo_path / gentoo)" "$(cd_portageq "${CD_ENV_UNION_DIR}" get_repo_path / gentoo)" ro || cd_die
+  bind_wrapper_map_dir "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_TMPDIR)" "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar PORTAGE_TMPDIR)" rw || cd_die
+  bind_wrapper_map_dir "$(cd_portageq "${CD_PREFIX_DIR}" envvar DISTDIR)" "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar DISTDIR)" ro || cd_die
+  bind_wrapper_map_dir "${CD_TMP_DIR}/" "${CD_TMP_DIR}" rw || cd_die
+  bind_wrapper_map_dir "${CD_PREFIX_DIR}/" "/host" ro || cd_die
   eend 0
 
   eend 0
