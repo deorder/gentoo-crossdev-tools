@@ -19,18 +19,6 @@ cd_parse_extra_arguments() {
       *-cd-env-dir=*)
       CD_ENV_DIR="${1#*=}"
       ;;
-      #*-cd-chroot-target-dir)
-      #shift; CD_CHROOT_TARGET_DIR="${1}"
-      #;;
-      #*-cd-chroot-target-dir=*)
-      #CD_CHROOT_TARGET_DIR="${1#*=}"
-      #;;
-      #*-cd-chroot-wrapper-dir)
-      #shift; CD_CHROOT_WRAPPER_DIR="${1}"
-      #;;
-      #*-cd-chroot-wrapper-dir=*)
-      #CD_CHROOT_WRAPPER_DIR="${1#*=}"
-      #;;
       --)
       shift;
       while (( ${#@} )); do
@@ -50,14 +38,6 @@ cd_parse_extra_arguments() {
     export CD_ENV_DIR=${CD_TMP_DIR}/env-${CD_TARGET}
   fi
 
-  #if [ -z "${CD_CHROOT_TARGET_DIR}" ]; then
-  #  export CD_CHROOT_TARGET_DIR="${TARGET_DIR}"
-  #fi
-
-  #if [ -z "${CD_CHROOT_WRAPPER_DIR}" ]; then
-  #  export CD_CHROOT_WRAPPER_DIR="${CD_TMP_DIR}/wrapper-${CD_TARGET}"
-  #fi
-
 }
 
 cd_parse_extra_arguments "${CD_ARGS[@]}"
@@ -65,8 +45,6 @@ cd_parse_extra_arguments "${CD_ARGS[@]}"
 if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
   echo "--cd-env-dir <dir> (Environment dir) (${CD_ENV_DIR}}"
-  #echo "--cd-chroot-target-dir <dir> (Target dir in chroot) (${CD_CHROOT_TARGET_DIR}}"
-  #echo "--cd-chroot-wrapper-dir <dir> (Wrapper dir in chroot) (${CD_CHROOT_WRAPPER_DIR}}"
   exit 1
 fi
 
@@ -106,20 +84,6 @@ if cd_is_mount "${CD_ENV_UNION_DIR}"; then
     CD_ENV_ARGS+=("CD_HOST_DIR=/")
     CD_ENV_ARGS+=("CD_HOST=${CD_TARGET}")
   fi
-
-  #CD_ENV_ARGS+=("PYTHONPATH=${CD_CHROOT_WRAPPER_DIR}/lib")
-  #CD_ENV_ARGS+=("_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata")
-
-  #CD_ENV_ARGS+=("CC_host=${CD_CHROOT_WRAPPER_DIR}/bin/${CD_HOST}-gcc")
-  #CD_ENV_ARGS+=("CXX_host=${CD_CHROOT_WRAPPER_DIR}/bin/${CD_HOST}-g++")
-  #CD_ENV_ARGS+=("CPP_host=${CD_CHROOT_WRAPPER_DIR}/bin/${CD_HOST}-cpp")
-
-  #CD_ENV_ARGS+=("CC_target=${CD_CHROOT_WRAPPER_DIR}/bin/${CD_TARGET}-gcc")
-  #CD_ENV_ARGS+=("CXX_target=${CD_CHROOT_WRAPPER_DIR}/bin/${CD_TARGET}-g++")
-  #CD_ENV_ARGS+=("CPP_target=${CD_CHROOT_WRAPPER_DIR}/bin/${CD_TARGET}-cpp")
-
-  #CD_ENV_ARGS+=("CD_PATH=${CD_CHROOT_WRAPPER_DIR}/bin${PREROOTPATH+:}${PREROOTPATH}:${PATH}")
-  #CD_ENV_ARGS+=("PREROOTPATH=${CD_CHROOT_WRAPPER_DIR}/bin${PREROOTPATH+:}${PREROOTPATH}:${PATH}")
 
   export SANDBOX_WRITE=${SANDBOX_WRITE}:${CD_ENV_DIR%/}
 
