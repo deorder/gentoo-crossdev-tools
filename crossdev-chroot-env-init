@@ -170,6 +170,10 @@ if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
   ebegin "Mounting union filesystem"
   mount ${CD_NODEBUG:--v} -t overlay overlay -o lowerdir="${CD_SOURCE_DIR}":"${CD_CHROOT_OVERLAY_DIR}",upperdir="${CD_CHROOT_COW_DIR}",workdir="${CD_CHROOT_WORK_DIR}" "${CD_CHROOT_UNION_DIR}" || cd_die
   eend 0
+  
+  ebegin "Mounting default filesystems"
+  source "${CD_SCRIPT_DIR}/crossdev-mount" --cd-target-dir "${CD_CHROOT_UNION_DIR}" || cd_die
+  eend 0
 
   if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-init-mount" ]; then
     ebegin "Executing crossdev chroot env init mount hook"

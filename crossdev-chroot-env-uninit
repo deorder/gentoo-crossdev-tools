@@ -123,6 +123,10 @@ if [ -d ${CD_CHROOT_UNION_DIR} ]; then
       eend 0
     fi
 
+    ebegin "Unmounting default filesystems"
+    source "${CD_SCRIPT_DIR}/crossdev-umount" --cd-target-dir "${CD_CHROOT_UNION_DIR}" || cd_die
+    eend 0
+
     ebegin "Unmounting union filesystem"
     umount ${CD_NODEBUG:--v} -R "${CD_CHROOT_UNION_DIR}" || cd_die
     eend 0
