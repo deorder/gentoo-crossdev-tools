@@ -35,7 +35,7 @@ cd_parse_extra_arguments() {
   done
 
   if [ -z "${CD_WRAPPER_DIR}" ]; then
-    export CD_WRAPPER_DIR="${CD_TMP_DIR}/wrapper-${CD_HOST}"
+    export CD_WRAPPER_DIR="${CD_TMP_DIR}/wrapper-${CD_TARGET}"
   fi
 
 }
