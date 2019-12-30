@@ -52,20 +52,11 @@ export CD_CHROOT_WORK_DIR=${CD_CHROOT_DIR}/work
 export CD_CHROOT_UNION_DIR=${CD_CHROOT_DIR}/union
 export CD_CHROOT_OVERLAY_DIR=${CD_CHROOT_DIR}/overlay
 
-function unbind_dir() {
-  local name=${1} destination=${2}
-  if [ -e "${CD_CHROOT_DIR}/${destination}" ]; then
-    if cd_is_mount "${CD_CHROOT_DIR}/${destination}"; then
-      umount ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}/${destination}" || cd_die
-    fi
-  fi
-}
-
 function unmap_dir() {
   local name=${1} destination=${2}
-  if [ -e "${CD_CHROOT_DIR}/${destination}" ]; then
-    if cd_is_mount_of_type "${CD_CHROOT_DIR}/${destination}" "overlay"; then
-      umount ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}/${destination}" || cd_die
+  if [ -e "${CD_CHROOT_UNION_DIR}/${destination}" ]; then
+    if cd_is_mount_of_type "${CD_CHROOT_UNION_DIR}/${destination}" "overlay"; then
+      umount ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
     fi
   fi
 }
@@ -85,38 +76,6 @@ if [ -d ${CD_CHROOT_UNION_DIR} ]; then
     fuser -Mk ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}"
     eend 0
 
-    ebegin "Unbinding host/target mappings"
-
-    ebegin "Unbind host root dir"
-    unbind_dir "host" "/host" || cd_die
-    eend 0
-
-    ebegin "Unbind portage package dir"
-    unmap_dir "portage-pkgdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" || cd_die
-    eend 0
-
-    ebegin "Unbind portage dist dir"
-    unbind_dir "portage-distdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar DISTDIR)" || cd_die
-    eend 0
-
-    while read -d '@' REPOSITORY; do
-      LOCATION=$(echo "${REPOSITORY}" | grep "location" | cut -d'=' -f2 | tr -d " ")
-      NAME=$(echo "${REPOSITORY}" | head -1 | sed 's/\[\(.*\)\]/\1/g' | tr '[:upper:]' '[:lower:]')
-      ebegin "Unbind portage repository: ${NAME}"
-      unmap_dir "repository-${NAME}" "${CD_CHROOT_UNION_DIR}/${LOCATION}" || cd_die
-      eend 0
-    done < <( portageq repos_config / | awk -v RS='\n\n' '{ printf "%s@" , $0 }' )
-
-    ebegin "Unbind portage temp dir"
-    unbind_dir "portage-tmpdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_TMPDIR)/portage" || cd_die
-    eend 0
-
-    ebegin "Unbind portage config dir"
-    unmap_dir "portage-cfgdir" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" || cd_die
-    eend 0
-
-    eend 0
-    
     if [ -f "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-unmount" ]; then
       ebegin "Executing crossdev chroot env uninit unmount hook"
       source "${CD_CONFIG_DIR}/crossdev-chroot-env-uninit-unmount" || cd_die

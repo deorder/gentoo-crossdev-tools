@@ -150,7 +150,10 @@ cd_get_package_version_by_path() {
 
 cd_portageq() {
   local root=${1}; shift
-  ROOT="${root}" PORTAGE_CONFIGROOT="${root}" portageq "${@}" 2> /dev/null
+  local result="$(ROOT="${root%+(/)}" PORTAGE_CONFIGROOT="${root%+(/)}" portageq "${@}" 2> /dev/null)"
+  result="${result#${CD_TARGET_DIR%+(/)}}"
+  result="${result#${root%+(/)}}"
+  echo "${result}"
 }
 
 cd_export_env_vars() {

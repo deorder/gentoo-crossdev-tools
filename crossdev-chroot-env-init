@@ -67,30 +67,30 @@ export CD_OVERLAY_TEMPLATES_DIR=${CD_SCRIPT_DIR}/overlay_templates
 export CD_USER_OVERLAY_TEMPLATES_DIR=${CD_CONFIG_DIR}/overlay_templates
 
 function bind_dir() {
-  local name=${1} source=${2} destination=${2} permission=${4}
+  local name=${1} source=${2} subdir=${3} permission=${4}
   if [ -e "${source}" ]; then
-    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
-    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_OVERLAY_DIR}/${destination}" || cd_die
-    if ! cd_is_mount "${CD_CHROOT_UNION_DIR}/${destination}"; then
-      mount ${CD_NODEBUG:--v} -o ${permission},bind "${source}" "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}/${subdir}" || cd_die
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_OVERLAY_DIR}/${subdir}" || cd_die
+    if ! cd_is_mount "${CD_CHROOT_UNION_DIR}/${subdir}"; then
+      mount ${CD_NODEBUG:--v} -o ${permission},bind "${source}" "${CD_CHROOT_UNION_DIR}/${subdir}" || cd_die
     fi
   fi
 }
 
 function map_dir() {
-  local name=${1} source=${2} destination=${2} permission=${4}
+  local name=${1} source=${2} subdir=${3} permission=${4}
   if [ -e "${source}" ]; then
-    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
-    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_OVERLAY_DIR}/${destination}" || cd_die
-    if ! cd_is_mount_of_type "${CD_CHROOT_UNION_DIR}/${destination}" "overlay"; then
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_UNION_DIR}/${subdir}" || cd_die
+    mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_OVERLAY_DIR}/${subdir}" || cd_die
+    if ! cd_is_mount_of_type "${CD_CHROOT_UNION_DIR}/${subdir}" "overlay"; then
       if [ "${permission}" = "rw" ]; then
         mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}"/cow-${name} || cd_die
         mkdir -p ${CD_NODEBUG:--v} "${CD_CHROOT_DIR}"/work-${name} || cd_die
       fi
       if [ "${permission}" = "ro" ]; then
-        mount ${CD_NODEBUG:--v} -t overlay overlay-${name} -o ${permission},lowerdir="${source}":"${CD_CHROOT_OVERLAY_DIR}/${destination}" "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+        mount ${CD_NODEBUG:--v} -t overlay overlay-${name} -o ${permission},lowerdir="${source}":"${CD_CHROOT_OVERLAY_DIR}/${subdir}" "${CD_CHROOT_UNION_DIR}/${subdir}" || cd_die
       else
-        mount ${CD_NODEBUG:--v} -t overlay overlay-${name} -o ${permission},lowerdir="${source}":"${CD_CHROOT_OVERLAY_DIR}/${destination}",upperdir="${CD_CHROOT_DIR}"/cow-${name},workdir="${CD_CHROOT_DIR}"/work-${name} "${CD_CHROOT_UNION_DIR}/${destination}" || cd_die
+        mount ${CD_NODEBUG:--v} -t overlay overlay-${name} -o ${permission},lowerdir="${source}":"${CD_CHROOT_OVERLAY_DIR}/${subdir}",upperdir="${CD_CHROOT_DIR}"/cow-${name},workdir="${CD_CHROOT_DIR}"/work-${name} "${CD_CHROOT_UNION_DIR}/${subdir}" || cd_die
       fi
     fi
   fi
@@ -183,11 +183,18 @@ if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
 
   ebegin "Binding host/target mappings"
 
-  ebegin "Bind portage config dir (rw)"
-  map_dir "portage-cfgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
-  eend 0
+  source_portage_cfgdir=$(cd_portageq "${CD_SOURCE_DIR}" envvar PORTAGE_CONFIGROOT)
+  if [ -z "${source_portage_cfgdir}" ]; then
+    ebegin "Bind portage config dir (rw) (prefix)" 
+    map_dir "portage-cfgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
+    eend 0
+  else
+    ebegin "Bind portage config dir (rw) (source)"
+    map_dir "portage-cfgdir" "${source_portage_cfgdir}/etc/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_CONFIGROOT)/etc/portage" rw || cd_die
+    eend 0
+  fi
 
-  ebegin "Bind portage temp dir (rw)"
+  ebegin "Bind portage temp dir (rw) (prefix)"
   mkdir -p ${CD_NODEBUG:--v} "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_TMPDIR)/portage" || cd_die
   bind_dir "portage-tmpdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PORTAGE_TMPDIR)/portage" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PORTAGE_TMPDIR)/portage" rw || cd_die
   eend 0
@@ -195,17 +202,28 @@ if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
   while read -d '@' REPOSITORY; do
     LOCATION=$(echo "${REPOSITORY}" | grep "location" | cut -d'=' -f2 | tr -d " ")
     NAME=$(echo "${REPOSITORY}" | head -1 | sed 's/\[\(.*\)\]/\1/g' | tr '[:upper:]' '[:lower:]')
-    ebegin "Bind portage repository: ${NAME} (ro)"
-    map_dir "repository-${NAME}" "${LOCATION}" "${CD_CHROOT_UNION_DIR}/${LOCATION}" ro || cd_die
+    ebegin "Bind portage repository: ${NAME} (ro) (prefix)"
+    map_dir "repository-${NAME}" "${LOCATION}" "${LOCATION}" ro || cd_die
     eend 0
-  done < <( portageq repos_config / | awk -v RS='\n\n' '{ printf "%s@" , $0 }' )
+  done < <( cd_portageq "${CD_PREFIX_DIR}" repos_config / | awk -v RS='\n\n' '{ printf "%s@" , $0 }' )
 
-  ebegin "Bind portage dist dir (rw)"
+  ebegin "Bind portage dist dir (rw) (prefix)"
   bind_dir "portage-distdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar DISTDIR)" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar DISTDIR)" rw || cd_die
   eend 0
 
-  ebegin "Bind portage package dir (rw)"
-  map_dir "portage-pkgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PKGDIR)" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" rw || cd_die
+  source_portage_pkgdir=$(cd_portageq "${CD_SOURCE_DIR}" envvar PKGDIR)
+  if [ -z "${source_portage_pkgdir}" ]; then
+    ebegin "Bind portage package dir (rw) (prefix)"
+    map_dir "portage-pkgdir" "$(cd_portageq "${CD_PREFIX_DIR}" envvar PKGDIR)" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" rw || cd_die
+    eend 0
+  else
+    ebegin "Bind portage package dir (rw) (source)"
+    map_dir "portage-pkgdir" "${CD_SOURCE_DIR}/${source_portage_pkgdir}" "$(cd_portageq "${CD_CHROOT_UNION_DIR}" envvar PKGDIR)" rw || cd_die
+    eend 0
+  fi
+
+  ebegin "Bind host linux source dir (rw)"
+  map_dir "linux-source" "${CD_PREFIX_DIR}/usr/src" "/usr/src" rw || cd_die
   eend 0
 
   ebegin "Bind host root dir (ro)"
