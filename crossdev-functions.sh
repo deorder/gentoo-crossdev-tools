@@ -156,33 +156,6 @@ cd_portageq() {
   echo "${result}"
 }
 
-cd_export_env_vars() {
-  local host=${CD_HOST}
-  local target=${1} target_dir=${2} wrapper_dir=${3}
-
-  export ROOT="${target_dir}/"
-  export SYSROOT="${target_dir}/"
-  export PORTAGE_CONFIGROOT="${target_dir}/"
-
-  #export CC="${wrapper_dir}/bin/${target}-gcc"
-  #export CXX="${wrapper_dir}/bin/${target}-g++"
-  #export CPP="${wrapper_dir}/bin/${target}-cpp"
-
-  export CC_host="${wrapper_dir}/bin/${host}-gcc"
-  export CXX_host="${wrapper_dir}/bin/${host}-g++"
-  export CPP_host="${wrapper_dir}/bin/${host}-cpp"
-
-  export CC_target="${wrapper_dir}/bin/${target}-gcc"
-  export CXX_target="${wrapper_dir}/bin/${target}-g++"
-  export CPP_target="${wrapper_dir}/bin/${target}-cpp"
-
-  export PYTHONPATH="${wrapper_dir}/lib"
-  export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
-
-  export PREROOTPATH="${wrapper_dir}/bin${PREROOTPATH+:}${PREROOTPATH}"
-  export PATH="${PREROOTPATH}:${PATH}"
-}
-
 cd_die() {
   local exit_code=$?
   if [ ! -z "${1}" ]; then

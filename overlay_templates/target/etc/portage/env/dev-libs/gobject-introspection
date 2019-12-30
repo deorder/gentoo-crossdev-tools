@@ -9,13 +9,6 @@
 # still requires QEMU. We are not able to make use of that but at
 # least the hacks in this file are short.
 
-src_prepare() {
-  default
-
-  # Use QEMU-wrapped binaries via PATH in future.
-  sed -i "s:\${bindir}/::g" *.pc.in || die
-}
-
 src_compile() {
   emake \
     INTROSPECTION_COMPILER="env PATH=.libs:\$(PATH) ${CD_SCRIPT_DIR}/crossdev-chroot-env-run ${S}/g-ir-compiler" \

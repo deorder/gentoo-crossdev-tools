@@ -13,6 +13,9 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
+      *-cd-use-filter)
+      CD_USE_FILTER=1
+      ;;
       *-cd-chroot-dir)
       shift; CD_CHROOT_DIR="${1}"
       ;;
@@ -44,6 +47,7 @@ cd_parse_extra_arguments "${CD_ARGS[@]}"
 
 if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
+  echo "--cd-use-filter (Filter chroot path out of arguments)"
   echo "--cd-chroot-dir <dir> (Environment dir) (${CD_CHROOT_DIR}}"
   exit 1
 fi
@@ -70,11 +74,19 @@ fi
 if cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
   CD_CHROOT_ARGS+=("-u ROOT")
   CD_CHROOT_ARGS+=("-u SYSROOT")
+  CD_CHROOT_ARGS+=("-u CC_host")
+  CD_CHROOT_ARGS+=("-u CXX_host")
+  CD_CHROOT_ARGS+=("-u CPP_host")
+  CD_CHROOT_ARGS+=("-u CC_target")
+  CD_CHROOT_ARGS+=("-u CXX_target")
+  CD_CHROOT_ARGS+=("-u CPP_target")
+  CD_CHROOT_ARGS+=("-u PYTHONPATH")
   CD_CHROOT_ARGS+=("-u CD_CUR_DIR")
   CD_CHROOT_ARGS+=("-u CD_CHROOT_DIR")
   CD_CHROOT_ARGS+=("-u CD_PREFIX_DIR")
   CD_CHROOT_ARGS+=("-u CD_TARGET_DIR")
   CD_CHROOT_ARGS+=("-u PORTAGE_CONFIGROOT")
+  CD_CHROOT_ARGS+=("-u _PYTHON_SYSCONFIGDATA_NAME")
 
   CD_CHROOT_ARGS+=("CD_CHROOT_ENV=1")
   
@@ -83,8 +95,16 @@ if cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
     CD_CHROOT_ARGS+=("CD_TARGET_DIR=/")
     CD_CHROOT_ARGS+=("CD_HOST=${CD_TARGET}")
   fi
-  
-  export SANDBOX_WRITE=${SANDBOX_WRITE}:${CD_CHROOT_DIR%/}
+
+  if [ ! -z "${CD_USE_FILTER}" ]; then
+    for ((index=0; index<"${#CD_CHROOT_ENTER_ARGS[@]}"; ++index)); do
+    FILTER=${CD_CHROOT_ENTER_ARGS[index]}
+    FILTER_SRC="${CD_CHROOT_UNION_DIR}/"
+    FILTER_DST="/"
+    FILTER="${FILTER/${FILTER_SRC}/${FILTER_DST}}"
+    CD_CHROOT_ENTER_ARGS[index]=${FILTER}
+    done
+  fi
 
   if (( ${#CD_CHROOT_ENTER_ARGS[@]} )); then
     chroot "${CD_CHROOT_UNION_DIR}" /usr/bin/env -C "${CD_CUR_DIR}" ${CD_CHROOT_ARGS[@]} /bin/bash /profile "${CD_CHROOT_ENTER_ARGS[@]}" || cd_die

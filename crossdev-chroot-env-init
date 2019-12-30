@@ -224,6 +224,10 @@ if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
     eend 0
   fi
 
+  ebegin "Bind chroot environment union dir (rw)"
+  bind_dir "chroot-union" "${CD_CHROOT_UNION_DIR}/" "/${CD_CHROOT_UNION_DIR}" rw || cd_die
+  eend 0
+
   ebegin "Bind host linux source dir (rw)"
   map_dir "linux-source" "${CD_PREFIX_DIR}/usr/src" "/usr/src" rw || cd_die
   eend 0

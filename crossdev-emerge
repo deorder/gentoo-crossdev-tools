@@ -13,6 +13,12 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
+      *-cd-source-dir)
+      shift; CD_SOURCE_DIR="${1}"
+      ;;
+      *-cd-source-dir=*)
+      CD_SOURCE_DIR="${1#*=}"
+      ;;
       *-cd-wrapper-dir)
       shift; CD_WRAPPER_DIR="${1}"
       ;;
@@ -34,6 +40,10 @@ cd_parse_extra_arguments() {
     shift
   done
 
+  if [ -z "${CD_SOURCE_DIR}" ]; then
+    export CD_SOURCE_DIR="${CD_TARGET_DIR}"
+  fi
+
   if [ -z "${CD_WRAPPER_DIR}" ]; then
     export CD_WRAPPER_DIR="${CD_TMP_DIR}/wrapper-${CD_TARGET}"
   fi
@@ -44,20 +54,23 @@ cd_parse_extra_arguments "${CD_ARGS[@]}"
 
 if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
+  echo "--cd-source-dir <dir> (Source dir) (${CD_SOURCE_DIR}}"
   echo "--cd-wrapper-dir <dir> (Wrapper dir) (${CD_WRAPPER_DIR}}"
   exit 1
 fi
 
-CD_TARGET_WRAPPER_DIR=${CD_WRAPPER_DIR}
-CD_TARGET_CHROOT_DIR=${CD_TMP_DIR}/chroot-${CD_TARGET}
-CD_TARGET_CHROOT_UNION_DIR=${CD_TARGET_CHROOT_DIR}/union
+CD_WRAPPER_DIR=${CD_WRAPPER_DIR}
+CD_CHROOT_DIR=${CD_TMP_DIR}/chroot-${CD_TARGET}
+CD_CHROOT_UNION_DIR=${CD_CHROOT_DIR}/union
   
 if portageq envvar FEATURES | grep -q "distcc"; then
   einfo "Using distcc for emerge"
   CD_WRAPPER_ARGS+=(--cd-use-distcc)
 fi
 
-if [ ! -z "${CD_CHROOT_ENV_CHROOT}" ]; then
+if [ -z "${CD_CHROOT_ENV_CHROOT}" ]; then
+  export FEATURES="-userpriv ${FEATURES}"
+else
   export FEATURES="-sandbox -usersandbox -userpriv ${FEATURES}"
 fi
 
@@ -67,15 +80,15 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-pre" ]; then
   eend 0
 fi
 
-ebegin "Creating wrapper environment"
-"${CD_SCRIPT_DIR}/crossdev-wrapper-env-create" --cd-target-dir "${CD_TARGET_CHROOT_UNION_DIR}" "${CD_WRAPPER_ARGS[@]}" || cd_die
-eend 0
-
-if ! cd_is_mount "${CD_TARGET_CHROOT_UNION_DIR}"; then
+if ! cd_is_mount "${CD_CHROOT_UNION_DIR}"; then
 ebegin "Creating target chroot environment"
-"${CD_SCRIPT_DIR}/crossdev-cow-env-init" --cd-target ${CD_TARGET} --cd-source-dir "${CD_TARGET_DIR}" --cd-chroot-dir "${CD_TARGET_CHROOT_DIR}" || cd_die
+"${CD_SCRIPT_DIR}/crossdev-chroot-env-init" --cd-target ${CD_TARGET} --cd-source-dir "${CD_SOURCE_DIR}" --cd-chroot-dir "${CD_CHROOT_DIR}" || cd_die
 eend 0
 fi
+
+ebegin "Creating wrapper environment"
+"${CD_SCRIPT_DIR}/crossdev-wrapper-env-create" --cd-target-dir "${CD_CHROOT_UNION_DIR}" "${CD_WRAPPER_ARGS[@]}" || cd_die
+eend 0
 
 if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-mount" ]; then
   ebegin "Executing crossdev emerge mount hook"
@@ -83,10 +96,34 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-mount" ]; then
   eend 0
 fi
 
-ebegin "Starting real emerge with: ${CD_EMERGE_ARGS[*]}"
+ebegin "Export environment variables"
+export ROOT="${CD_CHROOT_UNION_DIR}/"
+export SYSROOT="${CD_CHROOT_UNION_DIR}/"
+export PORTAGE_CONFIGROOT="${CD_CHROOT_UNION_DIR}/"
+
+export PYTHONPATH="${CD_WRAPPER_DIR}/lib"
+export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata
+
 export SANDBOX_WRITE=${SANDBOX_WRITE}:${CD_CHROOT_DIR%/}
-cd_export_env_vars "${CD_TARGET}" "${CD_TARGET_CHROOT_UNION_DIR}" "${CD_TARGET_WRAPPER_DIR}"
-${CD_TARGET}-emerge --config-root="${CD_TARGET_CHROOT_UNION_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
+
+#export CC="${CD_WRAPPER_DIR}/bin/${CD_TARGET}-gcc"
+#export CXX="${CD_WRAPPER_DIR}/bin/${CD_TARGET}-g++"
+#export CPP="${CD_WRAPPER_DIR}/bin/${CD_TARGET}-cpp"
+
+export CC_host="${CD_WRAPPER_DIR}/bin/${CD_HOST}-gcc"
+export CXX_host="${CD_WRAPPER_DIR}/bin/${CD_HOST}-g++"
+export CPP_host="${CD_WRAPPER_DIR}/bin/${CD_HOST}-cpp"
+
+export CC_CD_TARGET="${CD_WRAPPER_DIR}/bin/${CD_TARGET}-gcc"
+export CXX_CD_TARGET="${CD_WRAPPER_DIR}/bin/${CD_TARGET}-g++"
+export CPP_CD_TARGET="${CD_WRAPPER_DIR}/bin/${CD_TARGET}-cpp"
+
+export PREROOTPATH="${CD_WRAPPER_DIR}/bin${PREROOTPATH+:}${PREROOTPATH}"
+export PATH="${PREROOTPATH}:${PATH}"
+eend 0
+
+ebegin "Starting real emerge with: ${CD_EMERGE_ARGS[*]}"
+${CD_TARGET}-emerge --config-root="${CD_CHROOT_UNION_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
 eend 0
 
 if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-post" ]; then

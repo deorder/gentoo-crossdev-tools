@@ -95,25 +95,13 @@ cat << EOF > "${CD_WRAPPER_INSTALL_DIR}/bin/${CD_TOOL}"
 ARGS=("\$@")
 for ((index=0; index<"\${#ARGS[@]}"; ++index)); do
 FILTER=\${ARGS[index]}
-FILTER_SRC='-I/usr/include'
-FILTER_DST='-I${CD_TARGET_DIR}/usr/include'
-FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-FILTER_SRC='-L/lib'
-FILTER_DST='-L${CD_TARGET_DIR}/lib'
-FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-FILTER_SRC='-L/lib64'
-FILTER_DST='-L${CD_TARGET_DIR}/lib64'
-FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-FILTER_SRC='-L/usr/lib'
-FILTER_DST='-L${CD_TARGET_DIR}/usr/lib'
-FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
-FILTER_SRC='-L/usr/lib64'
-FILTER_DST='-L${CD_TARGET_DIR}/usr/lib64'
+FILTER_SRC='${CD_TARGET_DIR}/'
+FILTER_DST='/'
 FILTER="\${FILTER/\${FILTER_SRC}/\${FILTER_DST}}"
 ARGS[index]=\${FILTER}
 done
 export PATH="${CD_ORG_PATH}"
-exec "${CD_SCRIPT_DIR}/crossdev-cow-env-chroot" "${CD_TOOL}" "\${ARGS[@]}"
+exec "${CD_SCRIPT_DIR}/crossdev-chroot-env-run" "${CD_TOOL}" "\${ARGS[@]}"
 EOF
 eend 0
 done
