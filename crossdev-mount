@@ -22,28 +22,28 @@ if [ -d "${CD_TARGET_DIR}" ]; then
   if ! cd_is_mount "${CD_TARGET_DIR}/sys"; then
     ebegin "Mounting ${CD_TARGET_DIR}/sys"
     mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/sys" || cd_die
-    mount --bind /sys "${CD_TARGET_DIR}/sys" || cd_die
+    mount ${CD_NODEBUG:--v} --bind /sys "${CD_TARGET_DIR}/sys" || cd_die
     eend 0
   fi
 
   if ! cd_is_mount "${CD_TARGET_DIR}/dev"; then
     ebegin "Mounting ${CD_TARGET_DIR}/dev"
     mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/dev" || cd_die
-    mount --bind /dev "${CD_TARGET_DIR}/dev" || cd_die
+    mount ${CD_NODEBUG:--v} --bind /dev "${CD_TARGET_DIR}/dev" || cd_die
     eend 0
   fi
 
   if ! cd_is_mount "${CD_TARGET_DIR}/proc"; then
     ebegin "Mounting ${CD_TARGET_DIR}/proc"
     mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/proc" || cd_die
-    mount --bind /proc "${CD_TARGET_DIR}/proc" || cd_die
+    mount ${CD_NODEBUG:--v} --bind /proc "${CD_TARGET_DIR}/proc" || cd_die
     eend 0
   fi
 
   if ! cd_is_mount "${CD_TARGET_DIR}/dev/pts"; then
     ebegin "Mounting ${CD_TARGET_DIR}/dev/pts"
     mkdir -p ${CD_NODEBUG:--v} "${CD_TARGET_DIR}/dev/pts" || cd_die
-    mount --bind /dev/pts "${CD_TARGET_DIR}/dev/pts" || cd_die
+    mount ${CD_NODEBUG:--v} --bind /dev/pts "${CD_TARGET_DIR}/dev/pts" || cd_die
     eend 0
   fi
 

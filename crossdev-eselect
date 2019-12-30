@@ -42,6 +42,12 @@ if [ -f "${CD_CONFIG_DIR}/crossdev-eselect-pre" ]; then
   eend 0
 fi
 
+if [ -f "${CD_CONFIG_DIR}/crossdev-eselect-mount" ]; then
+  ebegin "Executing crossdev eselect mount hook"
+  source "${CD_CONFIG_DIR}/crossdev-eselect-mount" || cd_die
+  eend 0
+fi
+
 ebegin "Starting real eselect with: ${CD_ESELECT_ARGS[*]}"
 ROOT="${CD_TARGET_DIR}/" PORTAGE_CONFIGROOT="${CD_TARGET_DIR}/" eselect "${CD_ESELECT_ARGS[@]}" || cd_die
 eend 0

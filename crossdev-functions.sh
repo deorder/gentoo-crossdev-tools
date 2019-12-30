@@ -17,6 +17,12 @@ cd_parse_arguments() {
       *-cd-quiet)
       CD_QUIET=1
       ;;
+      *-cd-host)
+      shift; CD_HOST="${1}"
+      ;;
+      *-cd-host=*)
+      CD_HOST="${1#*=}"
+      ;;
       *-cd-target)
       shift; CD_TARGET="${1}"
       ;;
@@ -28,6 +34,12 @@ cd_parse_arguments() {
       ;;
       *-cd-tmp-dir=*)
       CD_TMP_DIR="${1#*=}"
+      ;;
+      *-cd-host-dir)
+      shift; CD_HOST_DIR="${1}"
+      ;;
+      *-cd-host-dir=*)
+      CD_HOST_DIR="${1#*=}"
       ;;
       *-cd-target-dir)
       shift; CD_TARGET_DIR="${1}"
@@ -64,7 +76,9 @@ cd_parse_arguments() {
     shift
   done
 
-  CD_HOST=$(gcc -dumpmachine)
+  if [ -z "${CD_HOST}" ]; then
+    CD_HOST=$(gcc -dumpmachine)
+  fi
 
   if [ -z "${CD_TARGET}" ]; then
     eerror "No target specified, use --cd-target"
@@ -78,6 +92,10 @@ cd_parse_arguments() {
     if [ ! -z "${CD_QUIET}" ]; then
       export EINFO_QUIET=1
     fi
+    if [ -z "${CD_TMP_DIR}" ]; then
+      CD_TMP_DIR="${CD_PREFIX_DIR}/var/tmp"
+      #ewarn "No temp dir specified, using: ${CD_TMP_DIR}"
+    fi
     if [ -z "${CD_PREFIX_DIR}" ]; then
       CD_PREFIX_DIR=""
       #ewarn "No temp dir specified, using: ${CD_PREFIX_DIR}"
@@ -86,17 +104,24 @@ cd_parse_arguments() {
       CD_CONFIG_DIR="${CD_PREFIX_DIR}/etc/crossdev"
       #ewarn "No config dir specified, using: ${CD_CONFIG_DIR}"
     fi
-    if [ -z "${CD_TARGET_DIR}" ]; then
-      CD_TARGET_DIR="${CD_PREFIX_DIR}/usr/${CD_TARGET}"
-      #ewarn "No target dir specified, using: ${CD_TARGET_DIR}"
+    if [ -z "${CD_HOST_DIR}" ]; then
+      CD_HOST_DIR="/"
+      #ewarn "No host dir specified, using: ${CD_HOST_DIR}"
     fi
-    if [ -z "${CD_TMP_DIR}" ]; then
-      CD_TMP_DIR="${CD_PREFIX_DIR}/var/tmp"
-      #ewarn "No temp dir specified, using: ${CD_TMP_DIR}"
+    if [ "${CD_TARGET}" = "${CD_HOST}" ]; then
+      if [ -z "${CD_TARGET_DIR}" ]; then
+        CD_TARGET_DIR="/"
+        #ewarn "No target dir specified, using: ${CD_TARGET_DIR}"
+      fi
+    else
+      if [ -z "${CD_TARGET_DIR}" ]; then
+        CD_TARGET_DIR="${CD_PREFIX_DIR}/usr/${CD_TARGET}"
+        #ewarn "No target dir specified, using: ${CD_TARGET_DIR}"
+      fi
     fi
   fi
 
-  export CD_TARGET CD_TMP_DIR CD_PREFIX_DIR CD_TARGET_PREFIX_DIR CD_TARGET_DIR CD_CONFIG_DIR CD_DEBUG
+  export CD_HOST CD_TARGET CD_TMP_DIR CD_PREFIX_DIR CD_HOST_DIR CD_TARGET_DIR CD_CONFIG_DIR CD_DEBUG
 
 }
 
@@ -104,6 +129,7 @@ cd_print_usage_header() {
   echo "usage: ${CD_SCRIPT_FILE} ..."
   echo "--cd-help (This help)"
   echo "--cd-debug (Verbose output)"
+  echo "--cd-host \"<host triplet>\" (Host triplet) (${CD_HOST-"required"})"
   echo "--cd-target \"<target triplet>\" (Target triplet) (${CD_TARGET-"required"})"
   echo "--cd-prefix-dir \"<prefix dir>\" (Prefix dir) (${CD_PREFIX_DIR:-"<empty>"})"
   echo "--cd-config-dir \"<config dir>\" (Config dir) (${CD_CONFIG_DIR:-"${CD_PREFIX_DIR}/etc/crossdev"})"
@@ -181,6 +207,12 @@ cd_resolve_symlink() {
     result="${path}"
   fi
   echo ${result#"${root}"}
+}
+
+cd_is_mount_of_type() {
+  local path=$(readlink -f ${1} 2> /dev/null)
+  local type=${2}
+  findmnt "${path}" | tail -1 | grep -q "${type}"
 }
 
 cd_is_mount() {

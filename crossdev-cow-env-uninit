@@ -1,32 +1,80 @@
 #!/bin/bash
 
+CD_COW_UNINIT_ARGS=()
+
 CD_CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 source "${CD_CUR_DIR}/crossdev-functions.sh"
 
 cd_parse_arguments $@
 
+cd_parse_extra_arguments() {
+
+  while (( ${#1} )); do
+    case ${1} in
+      *-cd-env-dir)
+      shift; CD_ENV_DIR="${1}"
+      ;;
+      *-cd-env-dir=*)
+      CD_ENV_DIR="${1#*=}"
+      ;;
+      --)
+      shift;
+      while (( ${#@} )); do
+        CD_COW_UNINIT_ARGS+=(${1})
+        shift
+      done
+      break
+      ;;
+      *)
+      CD_COW_UNINIT_ARGS+=(${1})
+      ;;
+    esac
+    shift
+  done
+
+  if [ -z "${CD_ENV_DIR}" ]; then
+    export CD_ENV_DIR=${CD_TMP_DIR}/env-${CD_TARGET}
+  fi
+
+}
+
+cd_parse_extra_arguments "${CD_ARGS[@]}"
+
 if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
+  echo "--cd-env-dir <dir> (Environment dir) (${CD_ENV_DIR}}"
   exit 1
 fi
 
-export CD_COW_DIR=${CD_TMP_DIR}/cow-${CD_TARGET}
-export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
-export CD_COW_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-cow-${CD_TARGET}
+export CD_ENV_COW_DIR=${CD_ENV_DIR}/cow-${CD_TARGET}
+export CD_ENV_WORK_DIR=${CD_ENV_DIR}/work-${CD_TARGET}
+export CD_ENV_UNION_DIR=${CD_ENV_DIR}/union-${CD_TARGET}
+export CD_ENV_OVERLAY_DIR=${CD_ENV_DIR}/overlay-${CD_TARGET}
 
-function wrapper_unmap_dir() {
+function unbind_wrapper_map_dir() {
   local dest=${1}
-  if cd_is_mount "${CD_UNION_DIR}/${dest}"; then
-    umount "${CD_UNION_DIR}/${dest}" || cd_die
+  if cd_is_mount "${CD_ENV_UNION_DIR}/${dest}"; then
+    ebegin "Unbind map dir: ${dest}"
+    umount ${CD_NODEBUG:--v} "${CD_ENV_UNION_DIR}/${dest}" || cd_die
+    eend 0
   fi
 }
 
-if [ -d ${CD_UNION_DIR} ]; then
-  if cd_is_mount ${CD_UNION_DIR}; then
+function unbind_union_overlay_dir() {
+  local dest=${1}
+  if cd_is_mount_of_type "${CD_ENV_UNION_DIR}/${dest}" "overlay"; then
+    ebegin "Unbind overlay dir: ${dest}"
+    umount ${CD_NODEBUG:--v} "${CD_ENV_UNION_DIR}/${dest}" || cd_die
+    eend 0
+  fi
+}
 
-    ebegin "Unbinding overlays"
-    umount "${CD_UNION_DIR}/etc/portage" || cd_die
+if [ -d ${CD_ENV_UNION_DIR} ]; then
+  if cd_is_mount ${CD_ENV_UNION_DIR}; then
+
+    ebegin "Unbinding host/target overlays"
+    unbind_union_overlay_dir "/etc/portage"
     eend 0
 
     if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-pre" ]; then
@@ -38,18 +86,30 @@ if [ -d ${CD_UNION_DIR} ]; then
     ebegin "Uninitializing cow environment"
 
     ebegin "Killing all remaining processes"
-    fuser -Mk ${CD_NODEBUG:--v} "${CD_UNION_DIR}"
+    fuser -Mk ${CD_NODEBUG:--v} "${CD_ENV_UNION_DIR}"
     eend 0
 
     ebegin "Unbinding host/target mappings"
-    wrapper_unmap_dir "/host" || cd_die
-    wrapper_unmap_dir "$(cd_portageq "${CD_TARGET_DIR}" envvar DISTDIR)" || cd_die
-    wrapper_unmap_dir "$(cd_portageq "${CD_TARGET_DIR}" envvar PORTAGE_TMPDIR)" || cd_die
-    wrapper_unmap_dir "$(cd_portageq "${CD_TARGET_DIR}" get_repo_path / gentoo)" || cd_die
+    unbind_wrapper_map_dir "/host" || cd_die
+    unbind_wrapper_map_dir "${CD_TMP_DIR}" || cd_die
+    unbind_wrapper_map_dir "${CD_SCRIPT_DIR}" || cd_die
+    unbind_wrapper_map_dir "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar DISTDIR)" || cd_die
+    unbind_wrapper_map_dir "$(cd_portageq "${CD_ENV_UNION_DIR}" envvar PORTAGE_TMPDIR)" || cd_die
+    unbind_wrapper_map_dir "$(cd_portageq "${CD_ENV_UNION_DIR}" get_repo_path / gentoo)" || cd_die
     eend 0
+    
+    if [ -f "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-unmount" ]; then
+      ebegin "Executing crossdev cow env uninit unmount hook"
+      source "${CD_CONFIG_DIR}/crossdev-cow-env-uninit-unmount" || cd_die
+      eend 0
+    fi
 
     ebegin "Unmounting union filesystem"
-    umount ${CD_NODEBUG:--v} "${CD_UNION_DIR}" || cd_die
+    umount ${CD_NODEBUG:--v} -R "${CD_ENV_UNION_DIR}" || cd_die
+    eend 0
+
+    ebegin "Unmounting environment filesystem"
+    umount ${CD_NODEBUG:--v} -R "${CD_ENV_DIR}" || cd_die
     eend 0
 
     eend 0

@@ -48,6 +48,12 @@ if [ ! -z "${CD_CONFIRM}" ]; then
     eend 0
   fi
 
+  if [ -f "${CD_CONFIG_DIR}/crossdev-clean-unmount" ]; then
+    ebegin "Executing crossdev clean unmount hook"
+    source "${CD_CONFIG_DIR}/crossdev-clean-unmount" || cd_die
+    eend 0
+  fi
+
   if mount | grep -q "${CD_TARGET_DIR}"; then
     eerror "Mounted filesystems in subdirectories detected, exiting"; exit 0
   fi

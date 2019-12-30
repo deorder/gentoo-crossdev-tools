@@ -289,6 +289,12 @@ fi
 
 eend 0
 
+if [ -f "${CD_CONFIG_DIR}/crossdev-bootstrap-mount" ]; then
+  ebegin "Executing crossdev bootstrap mount hook"
+  source "${CD_CONFIG_DIR}/crossdev-bootstrap-mount" || cd_die
+  eend 0
+fi
+
 ebegin "Starting crossdev python emerge with: ${CD_CROSSDEV_PYTHON_EMERGE_ARGS[*]}"
 "${CD_SCRIPT_DIR}/crossdev-emerge" --ask --tree --oneshot "${CD_CROSSDEV_PYTHON_EMERGE_ARGS[@]}" || cd_die
 eend 0

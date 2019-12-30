@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CD_UNION_ARGS=()
+CD_COW_ARGS=()
 CD_EMERGE_ARGS=()
 CD_WRAPPER_ARGS=()
 
@@ -14,6 +14,12 @@ cd_parse_extra_arguments() {
 
   while (( ${#1} )); do
     case ${1} in
+      *-cd-wrapper-dir)
+      shift; CD_WRAPPER_DIR="${1}"
+      ;;
+      *-cd-wrapper-dir=*)
+      CD_WRAPPER_DIR="${1#*=}"
+      ;;
       --)
       shift;
       while (( ${#@} )); do
@@ -29,23 +35,30 @@ cd_parse_extra_arguments() {
     shift
   done
 
+  if [ -z "${CD_WRAPPER_DIR}" ]; then
+    export CD_WRAPPER_DIR="${CD_TMP_DIR}/wrapper-${CD_HOST}"
+  fi
+
 }
 
 cd_parse_extra_arguments "${CD_ARGS[@]}"
 
 if [ ! -z "${CD_HELP}" ]; then
   cd_print_usage_header
+  echo "--cd-wrapper-dir <dir> (Wrapper dir) (${CD_WRAPPER_DIR}}"
   exit 1
 fi
+  
+export CD_HOST_ENV_DIR=${CD_TMP_DIR}/env-${CD_HOST}
+export CD_HOST_ENV_UNION_DIR=${CD_HOST_ENV_DIR}/union-${CD_HOST}
+export CD_HOST_ENV_TMP_DIR=${CD_HOST_ENV_UNION_DIR}/${CD_TMP_DIR}
 
-export CD_UNION_DIR=${CD_TMP_DIR}/union-${CD_TARGET}
-export CD_WRAPPER_DIR=${CD_TMP_DIR}/wrapper-${CD_TARGET}
+export CD_TARGET_ENV_DIR=${CD_HOST_ENV_TMP_DIR}/env-${CD_TARGET}
+export CD_TARGET_ENV_UNION_DIR=${CD_TARGET_ENV_DIR}/union-${CD_TARGET}
+export CD_TARGET_ENV_TMP_DIR=${CD_TARGET_ENV_UNION_DIR}/${CD_TMP_DIR}
 
-if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-pre" ]; then
-  ebegin "Executing crossdev emerge pre hook"
-  source "${CD_CONFIG_DIR}/crossdev-emerge-pre" || cd_die
-  eend 0
-fi
+export CD_CHROOT_WRAPPER_DIR=${CD_HOST_ENV_UNION_DIR}/${CD_WRAPPER_DIR}
+export CD_CHROOT_TARGET_DIR=${CD_TMP_DIR}/env-${CD_TARGET}/union-${CD_TARGET}
 
 if portageq envvar FEATURES | grep -q "distcc"; then
   einfo "Using distcc for emerge"
@@ -56,19 +69,36 @@ if [ ! -z "${CD_COW_ENV_CHROOT}" ]; then
   export FEATURES="-sandbox -usersandbox -userpriv ${FEATURES}"
 fi
 
-if ! cd_is_mount "${CD_UNION_DIR}"; then
-ebegin "Creating union environment"
-"${CD_SCRIPT_DIR}/crossdev-cow-env-init" "${CD_UNION_ARGS[@]}" || cd_die
-eend 0
+if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-pre" ]; then
+  ebegin "Executing crossdev emerge pre hook"
+  source "${CD_CONFIG_DIR}/crossdev-emerge-pre" || cd_die
+  eend 0
 fi
 
 ebegin "Creating wrapper environment"
 "${CD_SCRIPT_DIR}/crossdev-wrapper-env-create" "${CD_WRAPPER_ARGS[@]}" || cd_die
 eend 0
 
+if ! cd_is_mount "${CD_HOST_ENV_UNION_DIR}"; then
+ebegin "Creating host cow environment"
+"${CD_SCRIPT_DIR}/crossdev-cow-env-init" "${CD_COW_ARGS[@]}" --cd-target ${CD_HOST} --cd-src-dir "${CD_HOST_DIR}" --cd-env-dir "${CD_HOST_ENV_DIR}" || cd_die
+eend 0
+fi
+
+if ! cd_is_mount "${CD_TARGET_ENV_UNION_DIR}"; then
+ebegin "Creating target cow environment"
+"${CD_SCRIPT_DIR}/crossdev-cow-env-init" "${CD_COW_ARGS[@]}" --cd-target ${CD_TARGET} --cd-src-dir "${CD_TARGET_DIR}" --cd-env-dir "${CD_TARGET_ENV_DIR}" || cd_die
+eend 0
+fi
+
+if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-mount" ]; then
+  ebegin "Executing crossdev emerge mount hook"
+  source "${CD_CONFIG_DIR}/crossdev-emerge-mount" || cd_die
+  eend 0
+fi
+
 ebegin "Starting real emerge with: ${CD_EMERGE_ARGS[*]}"
-cd_export_env_vars ${CD_TARGET} "${CD_TARGET_DIR}" "${CD_WRAPPER_DIR}"
-${CD_TARGET}-emerge --config-root="${CD_TARGET_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
+"${CD_SCRIPT_DIR}/crossdev-cow-env-chroot" --cd-target ${CD_HOST} --cd-chroot-target-dir "${CD_CHROOT_TARGET_DIR}" --cd-chroot-wrapper-dir "${CD_CHROOT_WRAPPER_DIR}" --cd-env-dir "${CD_HOST_ENV_DIR}" ${CD_TARGET}-emerge --config-root="${CD_CHROOT_TARGET_DIR}/" "${CD_EMERGE_ARGS[@]}" || cd_die
 eend 0
 
 if [ -f "${CD_CONFIG_DIR}/crossdev-emerge-post" ]; then
